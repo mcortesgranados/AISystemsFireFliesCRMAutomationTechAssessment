@@ -14,6 +14,10 @@ java {
 	}
 }
 
+tasks.withType(JavaCompile).configureEach {
+	options.compilerArgs += ["-parameters"]
+}
+
 repositories {
 	mavenCentral()
 	maven { url 'https://repo1.maven.org/maven2/' }
@@ -40,6 +44,8 @@ dependencies {
 
 	// Ensure swagger-ui static assets are available via webjars
 	implementation 'org.webjars:swagger-ui:4.18.2'
+	// Allow version-agnostic webjar paths like /swagger-ui/index.html to resolve
+	implementation 'org.webjars:webjars-locator-core'
     runtimeOnly "com.mailgun:mailgun-java:1.0.8"
     // Unirest 1.x (legacy) used by some mcg_test examples
     implementation 'com.mashape.unirest:unirest-java:1.4.9'
