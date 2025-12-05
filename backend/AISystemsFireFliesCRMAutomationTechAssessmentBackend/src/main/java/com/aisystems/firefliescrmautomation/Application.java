@@ -16,7 +16,7 @@ import io.swagger.v3.oas.annotations.info.License;
  */ 
 @OpenAPIDefinition(
 		info = @Info(
-				title = "IUVENTISHEALTH API",
+				title = "AISystems API",
 				version = "1.0",
 				description = "This is a custom Swagger UI for My API",
 				contact = @Contact(name = "Manuela Cortés Granados", email = "manuela@example.com"),
