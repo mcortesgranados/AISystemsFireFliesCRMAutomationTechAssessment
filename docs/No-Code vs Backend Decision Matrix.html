@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>No-Code vs Backend Decision Matrix</title>
+<style>
+  body { font-family: 'Segoe UI', Arial, sans-serif; background: #fafbfc; color: #23272f; margin: 0; padding: 20px; }
+  .container { max-width: 900px; margin: auto; background: #fff; padding: 30px; border-radius: 10px; box-shadow: 0 8px 32px rgba(0,0,0,0.08); }
+  h1 { color: #1565c0; text-align: center; }
+  table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+  th, td { border: 1px solid #ccc; padding: 10px; text-align: center; }
+  th { background: #e3f2fd; color: #1565c0; }
+  input[type=range] { width: 100%; }
+  .score { font-weight: bold; }
+  .result { margin-top: 20px; font-size: 1.2em; }
+  .highlight { color: #2e7d32; font-weight: bold; }
+</style>
+</head>
+<body>
+<div class="container">
+<h1>No-Code vs Backend Decision Matrix</h1>
+<p>Adjust the importance (1 = low, 5 = high) for each factor and see which option scores higher.</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Factor</th>
+      <th>Importance</th>
+      <th>No-Code / Make.com Fit</th>
+      <th>Backend / Spring Boot Fit</th>
+      <th>No-Code Score</th>
+      <th>Backend Score</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Time to Prototype</td>
+      <td><input type="range" min="1" max="5" value="5" class="importance" data-index="0"></td>
+      <td>5</td>
+      <td>3</td>
+      <td class="noCodeScore">25</td>
+      <td class="backendScore">15</td>
+    </tr>
+    <tr>
+      <td>Volume / Scale</td>
+      <td><input type="range" min="1" max="5" value="4" class="importance" data-index="1"></td>
+      <td>3</td>
+      <td>5</td>
+      <td class="noCodeScore">12</td>
+      <td class="backendScore">20</td>
+    </tr>
+    <tr>
+      <td>Complexity of Logic</td>
+      <td><input type="range" min="1" max="5" value="4" class="importance" data-index="2"></td>
+      <td>2</td>
+      <td>5</td>
+      <td class="noCodeScore">8</td>
+      <td class="backendScore">20</td>
+    </tr>
+    <tr>
+      <td>Maintainability</td>
+      <td><input type="range" min="1" max="5" value="3" class="importance" data-index="3"></td>
+      <td>3</td>
+      <td>5</td>
+      <td class="noCodeScore">9</td>
+      <td class="backendScore">15</td>
+    </tr>
+    <tr>
+      <td>Security / Compliance</td>
+      <td><input type="range" min="1" max="5" value="5" class="importance" data-index="4"></td>
+      <td>2</td>
+      <td>5</td>
+      <td class="noCodeScore">10</td>
+      <td class="backendScore">25</td>
+    </tr>
+    <tr>
+      <td>Cost (Dev + Infra)</td>
+      <td><input type="range" min="1" max="5" value="3" class="importance" data-index="5"></td>
+      <td>5</td>
+      <td>2</td>
+      <td class="noCodeScore">15</td>
+      <td class="backendScore">6</td>
+    </tr>
+    <tr>
+      <td>Team Skillset</td>
+      <td><input type="range" min="1" max="5" value="4" class="importance" data-index="6"></td>
+      <td>5</td>
+      <td>2</td>
+      <td class="noCodeScore">20</td>
+      <td class="backendScore">8</td>
+    </tr>
+    <tr>
+      <td>Flexibility / Integrations</td>
+      <td><input type="range" min="1" max="5" value="4" class="importance" data-index="7"></td>
+      <td>3</td>
+      <td>5</td>
+      <td class="noCodeScore">12</td>
+      <td class="backendScore">20</td>
+    </tr>
+    <tr>
+      <td>Error Handling / Monitoring</td>
+      <td><input type="range" min="1" max="5" value="5" class="importance" data-index="8"></td>
+      <td>2</td>
+      <td>5</td>
+      <td class="noCodeScore">10</td>
+      <td class="backendScore">25</td>
+    </tr>
+    <tr>
+      <td>Vendor Lock-in</td>
+      <td><input type="range" min="1" max="5" value="3" class="importance" data-index="9"></td>
+      <td>2</td>
+      <td>5</td>
+      <td class="noCodeScore">6</td>
+      <td class="backendScore">15</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="result">
+  <p>No-Code Total Score: <span id="noCodeTotal" class="highlight">127</span></p>
+  <p>Backend Total Score: <span id="backendTotal" class="highlight">169</span></p>
+  <p>Recommended Choice: <span id="recommended" class="highlight">Backend / Spring Boot</span></p>
+</div>
+
+<script>
+const importanceSliders = document.querySelectorAll('.importance');
+const noCodeScores = Array.from(document.querySelectorAll('.noCodeScore'));
+const backendScores = Array.from(document.querySelectorAll('.backendScore'));
+const noCodeTotalEl = document.getElementById('noCodeTotal');
+const backendTotalEl = document.getElementById('backendTotal');
+const recommendedEl = document.getElementById('recommended');
+
+const noCodeFit = [5,3,2,3,2,5,5,3,2,2];
+const backendFit = [3,5,5,5,5,2,2,5,5,5];
+
+function updateScores() {
+  let noCodeTotal = 0;
+  let backendTotal = 0;
+  importanceSliders.forEach((slider, i) => {
+    const importance = parseInt(slider.value);
+    noCodeScores[i].textContent = importance * noCodeFit[i];
+    backendScores[i].textContent = importance * backendFit[i];
+    noCodeTotal += importance * noCodeFit[i];
+    backendTotal += importance * backendFit[i];
+  });
+  noCodeTotalEl.textContent = noCodeTotal;
+  backendTotalEl.textContent = backendTotal;
+  recommendedEl.textContent = noCodeTotal >= backendTotal ? "No-Code / Make.com" : "Backend / Spring Boot";
+}
+
+importanceSliders.forEach(slider => {
+  slider.addEventListener('input', updateScores);
+});
+
+updateScores();
+</script>
+</div>
+</body>
+</html>
