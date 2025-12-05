@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fireflies → CRM Automation Test Project</title>
+<style>
+  body { font-family: 'Segoe UI', Arial, sans-serif; background: #fafbfc; color: #23272f; margin: 0; padding: 0; }
+  .container { max-width: 950px; margin: 40px auto; background: #fff; box-shadow: 0 8px 32px rgba(0,0,0,0.08); border-radius: 10px; padding: 32px 40px; }
+  h1 { color: #1565c0; }
+  h2 { color: #2e7d32; margin-top: 32px; }
+  h3 { color: #7b1fa2; margin-top: 24px; }
+  .note { background: #e3f2fd; border-left: 4px solid #1976d2; padding: 16px 20px; margin: 18px 0; border-radius: 7px; }
+  .note ul { list-style: disc inside; margin: 0; padding-left: 1.2em; }
+  .note li { margin-bottom: 3px; line-height: 1.35; }
+  .note p { margin: 0 0 6px 0; line-height: 1.5; }
+  .footer { text-align: right; color: #888; font-size: 1em; margin-top: 40px; }
+  .tag { background: #e3f2fd; color: #1565c0; border-radius: 4px; padding: 3px 8px; margin-left: 6px; font-size: 0.95em; }
+  dt { color: #2e7d32; font-weight: bold; margin-top: 10px; }
+  dd { margin-bottom: 10px; }
+  .params table { border-collapse: collapse; width: 100%; margin: 10px 0; }
+  .params th, .params td { border: 1px solid #ccc; padding: 6px; }
+  .important { background: #fffde7; border-left: 4px solid #fbc02d; padding: 12px 18px; margin: 18px 0; border-radius: 5px; }
+  .sideEffects ul, .solid ul { margin: 0; padding-left: 20px; }
+  @media (max-width: 600px) { .container { padding: 16px 8px; } }
+  pre { background: #f6f8fa; padding: 14px; border-radius: 8px; overflow: auto; font-size: 0.92em; }
+  code { font-family: Consolas, 'Courier New', monospace; }
+  .row { display:flex; gap:20px; flex-wrap:wrap; }
+  .col { flex:1 1 420px; }
+  .endpoint { border: 1px solid #e0e0e0; padding: 12px 14px; border-radius: 8px; background: #fff; box-shadow: 0 3px 8px rgba(0,0,0,0.04); }
+  .json { white-space: pre; font-family: Consolas, 'Courier New', monospace; font-size: 0.95em; }
+  .success { color: #2e7d32; font-weight: 600; }
+  .error { color: #c62828; font-weight: 600; }
+</style>
+</head>
+<body>
+<div class="container">
+
+<h1>Test Project: Fireflies → CRM Automation</h1>
+
+<h2>1. Objective</h2>
+<p>Build an AI-powered workflow that extracts action items from a Fireflies meeting transcript and automatically creates tasks in a CRM system.</p>
+
+<h2>2. Timeline</h2>
+<p>Please complete and submit within 7 days of receiving this project.</p>
+
+<h2>3. Your Task</h2>
+<ul>
+  <li>3.1. Use the sample Fireflies transcript provided below</li>
+  <li>3.2. Extract action items using ChatGPT, Claude, or another LLM API (your choice)</li>
+  <li>3.3. Create tasks in a mock CRM system (use Airtable, Google Sheets, or any CRM you prefer as a stand-in)</li>
+  <li>3.4. Automate the workflow using Make.com, n8n, Zapier, or your preferred automation platform</li>
+  <li>3.5. Document your process with either:
+    <ul>
+      <li>3.5.1. A Loom video walkthrough (5-10 minutes)</li>
+      <li>3.5.2. A written guide with screenshots</li>
+    </ul>
+  </li>
+</ul>
+<h2>4. Requirements</h2>
+<dl class="note">
+<dt>4.1. Automation must include:</dt>
+<dd>✅ 4.1.1. AI/LLM integration to intelligently extract action items from the transcript</dd>
+<dd>✅ 4.1.2. Automated task creation in a CRM or task management system</dd>
+<dd>✅ 4.1.3. Error handling (what happens if the transcript is incomplete or the API fails?)</dd>
+<dd>✅ 4.1.4. At least ONE smart feature of your choice, such as:
+  <ul>
+    <li>4.1.4.1. Priority tagging based on urgency keywords</li>
+    <li>4.1.4.2. Deadline parsing from natural language</li>
+    <li>4.1.4.3. Task categorization</li>
+    <li>4.1.4.4. Assignee detection</li>
+    <li>4.1.4.5. Notification system</li>
+  </ul>
+</dd>
+</dl>
+
+<h2>5. Deliverables</h2>
+<p><strong>5.1. Working Automation</strong>
+</p>
+<ol class="note">
+  <ul>
+    <li>5.1.1. Provide access to your workflow</li>
+      <li>5.1.2. Ensure we can test it with the provided transcript</li>
+    </ul>
+  </ol>
+<p><strong>5.2. Documentation</strong> (choose ONE format)
+  </p>
+<ol class="note">
+  <blockquote>
+    <p>5.2.1. OPTION A: Loom video (5-10 minutes) showing:    </p>
+    <blockquote>
+      <p>5.2.1.1. How the workflow works</p>
+      <p>5.2.1.2. How to test it with a new transcript</p>
+      <p>5.2.1.3. How to troubleshoot common issues</p>
+    </blockquote>
+    <p>5.2.2. OPTION B: Written guide with screenshots covering the same topics</p>
+  </blockquote>
+  </ol>
+<p><strong>5.3. Design Explanation</strong>
+</p>
+<ol class="note">
+  <blockquote>
+    <p>5.3.1. Brief written explanation (1-2 paragraphs) of:
+    </p>
+    <blockquote>
+      <p>5.3.1. Why you chose your specific tools and approach</p>
+      <p>5.3.2. What smart features you added and why</p>
+      <p>5.3.3. Any limitations or future improvements you'd recommend</p>
+    </blockquote>
+  </blockquote>
+</ol>
+<h2>6. Evaluation Criteria</h2>
+<ul>
+  <li>6.1. Accuracy (15 points): Does your system correctly identify action items from the transcript?</li>
+  <li>6.2. Error Handling (10 points): How does your system handle edge cases like incomplete transcripts, API failures, or malformed data?</li>
+  <li>6.3. Documentation (10 points): Can someone on our team understand how to use and troubleshoot your workflow?</li>
+  <li>6.4. Creativity (5 points): Did you add thoughtful extras that make the system more useful or intelligent?</li>
+  <li><strong>Total: 40 points</strong></li>
+</ul>
+<h2>7. Sample Fireflies Transcript</h2>
+<div class="important">
+<p><strong>Meeting Date:</strong> November 15, 2024<br>
+<strong>Participants:</strong> Lisa, Jennifer (Real Estate Agent)</p>
+<pre>
+Lisa: Hi Jennifer, thanks for hopping on this call. I wanted to walk through where we are with your Follow Up Boss setup and make sure we're on track for your go-live date.
+Jennifer: Absolutely! I'm excited to finally get this rolling. I've been so overwhelmed trying to manage my leads manually.
+Lisa: Totally understandable. So, based on what we discussed last week, here's what we need to knock out over the next two weeks.
+Lisa: First, we need to finalize your lead source tracking. I'll need you to send me a list of all your lead sources—Zillow, Realtor.com, your website, referrals, open houses, etc.—by Friday.
+Jennifer Martinez: Got it. I'll pull that together and email it to you by end of week.
+Lisa: Perfect. Second, we need to set up your automated drip campaigns. I'm going to need you to review the email templates I sent you last Monday and let me know if you want to make any changes. Can you get me your feedback by Wednesday?
+Jennifer Martinez: Yes, I'll review those tonight and send you my edits by Wednesday morning.
+Lisa: Awesome. Third, we need to schedule a training session for your assistant, Sarah, so she knows how to use Follow Up Boss for lead entry and task management. Can you have her pick a time on my calendar for next week?
+Jennifer Martinez: Absolutely. I'll have her book something today.
+Lisa: Great. And lastly, I want to make sure we're integrating your showing software—ShowingTime, right?—with Follow Up Boss so that when a showing gets scheduled, it automatically creates a follow-up task. I'll handle the technical setup, but I'll need your ShowingTime login credentials. Can you send those to me via our secure portal by Thursday?
+Jennifer Martinez: Yep, I'll do that tomorrow.
+Lisa: Perfect. So just to recap: lead source list by Friday, email template feedback by Wednesday, Sarah books her training for next week, and ShowingTime credentials by Thursday. Does that all sound doable?
+Jennifer Martinez: Yes, totally doable. I really appreciate you breaking this down for me.
+Lisa: Of course! That's what we're here for. I'll check in with you on Friday to make sure everything's on track, and we should be good to go live by December 1st.
+Jennifer Martinez: Sounds great. Thanks, Lisa!
+Lisa: Anytime. Talk soon!
+</pre>
+</div>
+
+<h2>8. Important Notes</h2>
+<div class="note">
+<ul>
+<li>8.1. Don't overthink it! Practical, working solutions are valued over perfect code.</li>
+<li>8.2. Use free tools: Make.com, ChatGPT API credits, Airtable, etc. are sufficient.</li>
+<li>8.3. Ask questions if anything is unclear (concierge@aiarchitechs.com).</li>
+<li>8.4. Be yourself. Your thinking process and problem-solving approach are what we’re evaluating.</li>
+</ul>
+</div>
+
+<h2>9. Submission Instructions</h2>
+<p>Please submit your completed test project within 7 days by replying to the email you received with:</p>
+<ul>
+  <li>9.1. Access to your working automation</li>
+  <li>9.2. Your documentation (Loom video link OR written guide)</li>
+  <li>9.3. Your design explanation (1-2 paragraphs)ç</li>
+  </ul>
+<h2>10. Considerations</h2>
+<ul>
+  <li><a href="No-Code vs Backend Decision Matrix.html" target="_blank">10.1. No-Code vs Backend Decision Matrix</a></li>
+  <li><a href="Make com vs Spring Boot Backend Comparison.html" target="_blank">10.2. Make com vs Spring Boot Backend Comparison</a></li>
+</ul>
+</div>
+</body>
+</html>
