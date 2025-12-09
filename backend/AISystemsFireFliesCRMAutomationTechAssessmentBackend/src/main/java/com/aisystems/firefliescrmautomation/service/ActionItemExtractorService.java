@@ -4,6 +4,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Map;
+import com.aisystems.firefliescrmautomation.dto.HubSpotTaskCreationReport;
+import java.util.ArrayList;
 
 /**
  * Service for extracting action items from meeting transcripts using an LLM (OpenAI).
@@ -26,6 +28,9 @@ public class ActionItemExtractorService {
     @Autowired
     private OpenAIService openAIService;
 
+    @Autowired
+    private HubSpotTaskService hubSpotTaskService;
+
     /**
      * Extracts action items from a meeting transcript using the LLM API.
      * <p>
@@ -46,5 +51,36 @@ public class ActionItemExtractorService {
         // Example: Use Jackson or Gson to parse response
         // Handle errors and incomplete transcripts
         return List.of(); // Placeholder: implement JSON parsing
+    }
+
+    /**
+     * Extracts action items from a transcript and creates tasks in HubSpot, returning a full report.
+     * @param transcript The meeting transcript text.
+     * @return HubSpotTaskCreationReport with status and details.
+     * @author Manuela Cortés Granados (manuelacortesgranados@gmail.com)
+     * @since 9 December 2025 GMT 7:58 AM -5 Bogotá DC Colombia
+     */
+    public HubSpotTaskCreationReport extractAndCreateHubSpotTasks(String transcript) {
+        List<Map<String, Object>> actionItems = extractActionItems(transcript);
+        List<String> responses = new ArrayList<>();
+        List<String> errors = new ArrayList<>();
+        int succeeded = 0;
+        int failed = 0;
+        for (Map<String, Object> item : actionItems) {
+            try {
+                String response = hubSpotTaskService.createTask(
+                    item.getOrDefault("description", "").toString(),
+                    item.getOrDefault("deadline", null) != null ? item.get("deadline").toString() : null,
+                    item.getOrDefault("priority", "NONE").toString(),
+                    item.getOrDefault("assignee", null) != null ? item.get("assignee").toString() : null
+                );
+                responses.add(response);
+                succeeded++;
+            } catch (Exception ex) {
+                errors.add("Error for item: " + item + " - " + ex.getMessage());
+                failed++;
+            }
+        }
+        return new HubSpotTaskCreationReport(actionItems.size(), succeeded, failed, responses, errors);
     }
 }
