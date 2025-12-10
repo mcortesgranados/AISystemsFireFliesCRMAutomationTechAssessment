@@ -132,6 +132,12 @@ public class OpenAIService {
         try {
             String json = getCompletion(extractionPrompt);
             if (json != null && !json.trim().isEmpty()) {
+                // Strip Markdown code fences if present
+                json = json.trim();
+                if (json.startsWith("```")) {
+                    json = json.replaceFirst("```json", "")
+                               .replaceFirst("```", "");
+                }
                 // Try to parse the JSON array
                 try {
                     com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
@@ -162,18 +168,40 @@ public class OpenAIService {
     public HubSpotTaskCreationReport createTasksFromTranscript(String baseTranscript) {
         List<String> responses = new ArrayList<>();
         List<String> errors = new ArrayList<>();
+        List<Map<String, Object>> actionItems = new ArrayList<>();
+        List<Map<String, Object>> taskResults = new ArrayList<>();
         try {
-            List<Map<String, Object>> actionItems = extractActionItemsFromTranscript(baseTranscript);
+            actionItems = extractActionItemsFromTranscript(baseTranscript);
             responses = hubSpotTaskService.createTasksFromActionItems(actionItems);
+            // Build user-friendly task result summary
+            for (int i = 0; i < responses.size(); i++) {
+                Map<String, Object> result = new HashMap<>();
+                if (i < actionItems.size()) {
+                    result.putAll(actionItems.get(i));
+                }
+                String raw = responses.get(i);
+                result.put("hubspotRawResponse", raw);
+                try {
+                    com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
+                    Map<?, ?> parsed = mapper.readValue(raw, Map.class);
+                    Object id = parsed.get("id");
+                    Object url = parsed.get("url");
+                    result.put("hubspotTaskId", id);
+                    result.put("hubspotTaskUrl", url);
+                } catch (Exception ignored) {
+                    // keep raw response only
+                }
+                taskResults.add(result);
+            }
         } catch (Exception ex) {
             errors.add("Failed to create tasks: " + ex.getMessage());
         }
 
-        int totalRequested = responses != null ? responses.size() : 0;
+        int totalRequested = actionItems != null ? actionItems.size() : 0;
         int totalFailed = errors.size();
         int totalSucceeded = Math.max(0, totalRequested - totalFailed);
 
-        return new HubSpotTaskCreationReport(totalRequested, totalSucceeded, totalFailed, responses, errors);
+        return new HubSpotTaskCreationReport(totalRequested, totalSucceeded, totalFailed, responses, errors, actionItems, taskResults);
     }
 
     /**
