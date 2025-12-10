@@ -64,6 +64,7 @@ public class ActionItemExtractorService {
         List<Map<String, Object>> actionItems = extractActionItems(transcript);
         List<String> responses = new ArrayList<>();
         List<String> errors = new ArrayList<>();
+        List<Map<String, Object>> taskResults = new ArrayList<>();
         int succeeded = 0;
         int failed = 0;
         for (Map<String, Object> item : actionItems) {
@@ -75,12 +76,13 @@ public class ActionItemExtractorService {
                     item.getOrDefault("assignee", null) != null ? item.get("assignee").toString() : null
                 );
                 responses.add(response);
+                taskResults.add(item);
                 succeeded++;
             } catch (Exception ex) {
                 errors.add("Error for item: " + item + " - " + ex.getMessage());
                 failed++;
             }
         }
-        return new HubSpotTaskCreationReport(actionItems.size(), succeeded, failed, responses, errors);
+        return new HubSpotTaskCreationReport(actionItems.size(), succeeded, failed, responses, errors, actionItems, taskResults);
     }
 }
