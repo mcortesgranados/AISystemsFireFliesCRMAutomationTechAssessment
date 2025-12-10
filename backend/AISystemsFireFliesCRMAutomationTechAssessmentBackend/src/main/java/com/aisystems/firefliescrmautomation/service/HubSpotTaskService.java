@@ -9,17 +9,17 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Service for creating tasks in HubSpot via the HubSpot API.
+ * Service for creating deals in HubSpot via the HubSpot API.
  * <p>
  * Requires the environment variable HUBSPOT_API_KEY (private app token) to be set.
  * </p>
  *
  * Example usage:
  * <pre>
- *     hubSpotTaskService.createTask("Follow up with client", "2025-12-10", "high", "jane.doe@example.com");
+ *     hubSpotTaskService.createTask("Follow up with client", "2025-12-10", "high", "80047009");
  * </pre>
  *
- * @author Manuela Cortés Granados
+ * @author Manuela CortAcs Granados
  * @since 9 December 2025
  */
 @Service
@@ -28,15 +28,21 @@ public class HubSpotTaskService {
     @Value("${HUBSPOT_API_KEY}")
     private String hubspotApiKey;
 
-    private static final String HUBSPOT_TASKS_URL = "https://api.hubapi.com/crm/v3/objects/tasks";
+    private static final String HUBSPOT_DEALS_URL = "https://api.hubapi.com/crm/v3/objects/deals";
 
     /**
-     * Creates a task in HubSpot with the given details.
+     * Creates a deal in HubSpot with the given details.
      *
-     * @param description The task description.
-     * @param dueDate     The due date (ISO 8601 format, e.g., 2025-12-10).
-     * @param priority    The priority (e.g., high, medium, low).
-     * @param assignee    The assignee's email (optional).
+     * ai_systems_description
+     * ai_systems_assignee
+     * ai_systems_priority
+     * ai_systems_deadline
+     * 
+     * 
+     * @param description Deal name/description.
+     * @param dueDate     Target close date (ISO 8601 or epoch ms).
+     * @param priority    Priority (stored as custom field ai_systems_priority).
+     * @param assignee    HubSpot owner id (numeric). If non-numeric, it is ignored.
      * @return The HubSpot API response as a string.
      */
     public String createTask(String description, String dueDate, String priority, String assignee) {
@@ -46,23 +52,23 @@ public class HubSpotTaskService {
         headers.setBearerAuth(hubspotApiKey);
 
         Map<String, Object> properties = new HashMap<>();
-        properties.put("hs_task_body", description);
-        properties.put("hs_task_priority", priority != null ? priority.toUpperCase() : "NONE"); // Ensure uppercase and default to NONE
-        properties.put("hs_timestamp", System.currentTimeMillis());
-        if (assignee != null && !assignee.isEmpty()) {
-            properties.put("hubspot_owner_id", assignee); // You may need to resolve email to owner ID
-        }
+        properties.put("ai_systems_description", description);
+        properties.put("ai_systems_deadline", dueDate);
+        properties.put("ai_systems_assignee", assignee);
+        properties.put("ai_systems_priority", priority != null ? priority.toUpperCase() : "NONE");
+
+
 
         Map<String, Object> body = new HashMap<>();
         body.put("properties", properties);
 
         HttpEntity<Map<String, Object>> request = new HttpEntity<>(body, headers);
-        ResponseEntity<String> response = restTemplate.postForEntity(HUBSPOT_TASKS_URL, request, String.class);
+        ResponseEntity<String> response = restTemplate.postForEntity(HUBSPOT_DEALS_URL, request, String.class);
         return response.getBody();
     }
 
     /**
-     * Creates multiple tasks in HubSpot from a list of action items.
+     * Creates multiple deals in HubSpot from a list of action items.
      * Each action item should have keys: description, priority, deadline, assignee.
      * @param actionItems List of action item maps
      * @return List of HubSpot API responses
@@ -78,5 +84,28 @@ public class HubSpotTaskService {
             responses.add(response);
         }
         return responses;
+    }
+
+    // Convert human-friendly or ISO strings to epoch millis if possible; otherwise return null.
+    private Long tryParseCloseDate(String raw) {
+        if (raw == null || raw.isBlank()) {
+            return null;
+        }
+        try {
+            // Try numeric epoch ms
+            return Long.parseLong(raw.trim());
+        } catch (NumberFormatException ignore) {
+            // Try ISO-8601 date/time
+            try {
+                return java.time.Instant.parse(raw.trim()).toEpochMilli();
+            } catch (Exception ignore2) {
+                // Try LocalDate with midnight UTC
+                try {
+                    return java.time.LocalDate.parse(raw.trim()).atStartOfDay(java.time.ZoneOffset.UTC).toInstant().toEpochMilli();
+                } catch (Exception ignore3) {
+                    return null;
+                }
+            }
+        }
     }
 }
