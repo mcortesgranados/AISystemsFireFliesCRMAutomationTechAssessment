@@ -22,6 +22,11 @@ public class HubSpotTaskServiceRunner implements CommandLineRunner {
 
     @Override
     public void run(String... args) {
+        //runSampleTaskCreation();
+    }
+
+    // Extracted for clarity and potential reuse
+    private void runSampleTaskCreation() {
         String description = "Follow up with client";
         String dueDate = "2025-12-10";
         String priority = "high";
