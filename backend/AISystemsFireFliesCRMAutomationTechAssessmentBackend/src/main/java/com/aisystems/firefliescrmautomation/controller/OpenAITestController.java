@@ -159,7 +159,7 @@ public class OpenAITestController {
                     )
             )
     )
-    @PostMapping("/create-tasks-from-transcript")
+    @PostMapping("/create-deal-from-transcript-to-hubspot")
     public HubSpotTaskCreationReport createTasksFromTranscriptInHubspot(@RequestBody String baseTranscript) {
         return openAIService.createTasksFromTranscript(baseTranscript);
     }
