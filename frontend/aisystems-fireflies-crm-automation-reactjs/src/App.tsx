@@ -84,6 +84,7 @@ function App() {
   const [showProcessingModal, setShowProcessingModal] = useState(false)
   const [processingSeconds, setProcessingSeconds] = useState(0)
   const [showSummaryModal, setShowSummaryModal] = useState(false)
+  const [showSuccessModal, setShowSuccessModal] = useState(false)
   const [summaryData, setSummaryData] = useState<SampleSummary | null>(null)
   const processingTimeoutRef = useRef<number | null>(null)
 
@@ -116,12 +117,14 @@ function App() {
 
   const closeDeleteModal = () => setShowDeleteModal(false)
   const closeSummaryModal = () => setShowSummaryModal(false)
+  const closeSuccessModal = () => setShowSuccessModal(false)
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
     setErrorMessage('')
     setResponse(null)
     setDeleteResponse(null)
+    setShowSuccessModal(false)
     setLoading(true)
 
     try {
@@ -143,6 +146,7 @@ function App() {
 
       const payload = await res.json()
       setResponse(payload)
+      setShowSuccessModal(true)
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Unknown error'
       setErrorMessage(message)
@@ -270,6 +274,9 @@ function App() {
         <header>
           <p className="eyebrow">CRM Automation</p>
           <h1>Create HubSpot deals from transcripts</h1>
+          <p className="subtitle">
+            Developed by : Manuela Cortés Granados for AI Systems 11 December 2025
+          </p>
           <p className="lede">
             Paste in your meeting notes, post them to the automation endpoint, and preview the HubSpot tasks it spins up.
           </p>
@@ -432,6 +439,28 @@ function App() {
               type="button"
               className="modal-close-button"
               onClick={closeSummaryModal}
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      )}
+      {showSuccessModal && (
+        <div
+          className="modal-overlay"
+          role="dialog"
+          aria-modal="true"
+          onClick={closeSuccessModal}
+        >
+          <div className="modal" onClick={(event) => event.stopPropagation()}>
+            <h2>Post request complete</h2>
+            <p className="section-copy">
+              Operation successful! Verify the action items, HubSpot tasks, and raw JSON response shown just below the Run POST controls.
+            </p>
+            <button
+              type="button"
+              className="modal-close-button"
+              onClick={closeSuccessModal}
             >
               Close
             </button>
