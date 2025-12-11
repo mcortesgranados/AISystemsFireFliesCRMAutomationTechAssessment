@@ -113,8 +113,8 @@ public class OpenAITestController {
      */
 
     @Operation(
-            summary = "generateSampleTranscriptFull - Generate random sample transcript (full response)",
-            description = "Method generateSampleTranscriptFull: Returns the full OpenAI API response for a random sample meeting transcript."
+            summary = "(generateSampleTranscriptFull) generateSampleTranscriptFull - Generate random sample transcript (full response)",
+            description = "(generateSampleTranscriptFull) Method generateSampleTranscriptFull: Returns the full OpenAI API response for a random sample meeting transcript."
     )
     @GetMapping("/generate-sample-transcript-full")
     public Map<String, Object> generateSampleTranscriptFull() {
