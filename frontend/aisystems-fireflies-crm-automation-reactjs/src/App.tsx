@@ -21,6 +21,8 @@ Lisa: Of course! That's what we're here for. I'll check in with you on Friday to
 Jennifer Martinez: Sounds great. Thanks, Lisa!
 Lisa: Anytime. Talk soon!`
 
+const API_BASE_URL = 'https://44.198.115.169:9090'
+
 type ActionItem = {
   description?: string
   priority?: string
@@ -124,7 +126,7 @@ function App() {
 
     try {
       const res = await fetch(
-        'http://44.198.115.169:9090/api/openai/create-deal-from-transcript-to-hubspot',
+        `${API_BASE_URL}/api/openai/create-deal-from-transcript-to-hubspot`,
         {
           method: 'POST',
           headers: {
@@ -156,7 +158,7 @@ function App() {
 
     try {
       const res = await fetch(
-        'http://44.198.115.169:9090/api/hubspot/delete-all-deals',
+        `${API_BASE_URL}/api/hubspot/delete-all-deals`,
         {
           method: 'DELETE',
           headers: {
@@ -189,7 +191,7 @@ function App() {
 
     try {
       const res = await fetch(
-        'http://44.198.115.169:9090/api/openai/generate-sample-transcript-full',
+        `${API_BASE_URL}/api/openai/generate-sample-transcript-full`,
         {
           method: 'GET',
           headers: {
