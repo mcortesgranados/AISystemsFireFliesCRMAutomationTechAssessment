@@ -1,0 +1,28 @@
+@startuml
+skinparam componentStyle rectangle
+
+actor ApiClient
+participant OpenAITestController
+participant ActionItemExtractorService
+participant OpenAIService
+participant HubSpotTaskService
+participant HubSpotTaskCreationReport
+participant HubSpotDealDeletionReport
+
+ApiClient -> OpenAITestController : POST /create-deal-from-transcript
+OpenAITestController -> ActionItemExtractorService : extractActionItems()
+ActionItemExtractorService -> OpenAIService : getCompletion()
+OpenAIService --> ActionItemExtractorService : completion response
+ActionItemExtractorService --> OpenAITestController : action items
+OpenAITestController -> HubSpotTaskService : createTasks(items)
+HubSpotTaskService --> ActionItemExtractorService : task results
+HubSpotTaskService --> HubSpotTaskCreationReport : emit report
+OpenAITestController -> HubSpotTaskService : deleteAllHubSpotDeals()
+HubSpotTaskService --> HubSpotDealDeletionReport : emit deletion report
+OpenAITestController --> ApiClient : response
+
+note left of HubSpotTaskService
+  Handles deal creation and deletion, reports statuses.
+end note
+
+@enduml
