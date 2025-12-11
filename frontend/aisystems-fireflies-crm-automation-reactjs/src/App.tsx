@@ -41,6 +41,7 @@ function App() {
   const [errorMessage, setErrorMessage] = useState('')
   const [deleteLoading, setDeleteLoading] = useState(false)
   const [deleteErrorMessage, setDeleteErrorMessage] = useState('')
+  const [showDeleteModal, setShowDeleteModal] = useState(false)
 
   const actionItems = (Array.isArray(response?.actionItems)
     ? response.actionItems
@@ -68,6 +69,8 @@ function App() {
     : response
     ? 'Response received'
     : 'Ready to submit'
+
+  const closeDeleteModal = () => setShowDeleteModal(false)
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
@@ -125,169 +128,194 @@ function App() {
 
       const payload = await res.json()
       setDeleteResponse(payload)
+      setResponse(null)
+      setErrorMessage('')
+      setShowDeleteModal(true)
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Unknown error'
       setDeleteErrorMessage(message)
+      setShowDeleteModal(true)
     } finally {
       setDeleteLoading(false)
     }
   }
 
   return (
-    <main className="app-shell">
-      <header>
-        <p className="eyebrow">CRM Automation</p>
-        <h1>Create HubSpot deals from transcripts</h1>
-        <p className="lede">
-          Paste in your meeting notes, post them to the automation endpoint, and preview the HubSpot tasks it spins up.
-        </p>
-      </header>
+    <>
+      <main className="app-shell">
+        <header>
+          <p className="eyebrow">CRM Automation</p>
+          <h1>Create HubSpot deals from transcripts</h1>
+          <p className="lede">
+            Paste in your meeting notes, post them to the automation endpoint, and preview the HubSpot tasks it spins up.
+          </p>
+        </header>
 
-      <section className="card form-card">
-        <h2>Send a transcript</h2>
-        <p className="section-copy">
-          The server ingests raw conversation text and returns structured action items and task metadata.
-        </p>
+        <section className="card form-card">
+          <h2>Send a transcript</h2>
+          <p className="section-copy">
+            The server ingests raw conversation text and returns structured action items and task metadata.
+          </p>
 
-        <form className="transcript-form" onSubmit={handleSubmit}>
-          <label htmlFor="transcript">Meeting transcript</label>
-          <textarea
-            id="transcript"
-            rows={12}
-            value={transcript}
-            onChange={(event) => setTranscript(event.target.value)}
-          />
+          <form className="transcript-form" onSubmit={handleSubmit}>
+            <label htmlFor="transcript">Meeting transcript</label>
+            <textarea
+              id="transcript"
+              rows={12}
+              value={transcript}
+              onChange={(event) => setTranscript(event.target.value)}
+            />
 
-          <div className="form-actions">
-            <button type="submit" disabled={loading}>
-              {loading ? 'Sending…' : 'Run POST'}
-            </button>
-            <button
-              type="button"
-              className="secondary-button"
-              disabled={!response || deleteLoading}
-              onClick={handleDeleteDeals}
-            >
-              {deleteLoading ? 'Deleting…' : 'Delete all deals'}
-            </button>
-            <span className="status-chip">{statusChipLabel}</span>
-          </div>
-          {errorMessage && <p className="error-text">Error: {errorMessage}</p>}
-          {deleteErrorMessage && (
-            <p className="error-text">Delete error: {deleteErrorMessage}</p>
-          )}
-        </form>
-      </section>
+            <div className="form-actions">
+              <button type="submit" disabled={loading}>
+                {loading ? 'Sending…' : 'Run POST'}
+              </button>
+              <button
+                type="button"
+                className="secondary-button"
+                disabled={!response || deleteLoading}
+                onClick={handleDeleteDeals}
+              >
+                {deleteLoading ? 'Deleting…' : 'Delete all deals'}
+              </button>
+              <span className="status-chip">{statusChipLabel}</span>
+            </div>
+            {errorMessage && <p className="error-text">Error: {errorMessage}</p>}
+          </form>
+        </section>
 
-      {response && (
-        <>
-          <section className="card response-card">
-            <h2>Action items</h2>
-            {actionItems.length > 0 ? (
-              <div className="item-grid">
-                {actionItems.map((item, index) => (
-                  <article className="item-card" key={`${item.description ?? index}-${index}`}>
-                    <p className="item-priority">{(item.priority as string) ?? 'Priority: N/A'}</p>
-                    <h3>{(item.description as string) ?? 'No description'}</h3>
-                    <p className="item-meta">
-                      <span>Assignee: {(item.assignee as string) ?? 'Unassigned'}</span>
-                      <span>Deadline: {(item.deadline as string) ?? 'None'}</span>
-                    </p>
-                  </article>
-                ))}
-              </div>
-            ) : (
-              <p className="empty-state">The response did not include action items.</p>
-            )}
-          </section>
-
-          <section className="card response-card">
-            <h2>HubSpot tasks</h2>
-            {taskResults.length > 0 ? (
-              <div className="task-list">
-                {taskResults.map((task, index) => (
-                  <article className="task-card" key={`${task.hubspotTaskId ?? index}-${index}`}>
-                    <div>
-                      <p className="item-priority">Task ID: {(task.hubspotTaskId as string) ?? 'N/A'}</p>
-                      <h3>{(task.description as string) ?? 'No description'}</h3>
-                    </div>
-                    {(task.hubspotTaskUrl as string) && (
-                      <a
-                        href={task.hubspotTaskUrl as string}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="task-link"
-                      >
-                        Open in HubSpot
-                      </a>
-                    )}
-                  </article>
-                ))}
-              </div>
-            ) : (
-              <p className="empty-state">No HubSpot tasks were returned.</p>
-            )}
-          </section>
-
-          <section className="card response-card">
-            <h2>Raw JSON response</h2>
-            <pre className="json-block">{JSON.stringify(response, null, 2)}</pre>
-          </section>
-        </>
-      )}
-      {(deleteResponse || deleteErrorMessage) && (
-        <section className="card response-card">
-          <h2>Delete-all-deals result</h2>
-          {deleteResponse ? (
-            <>
-              <p className="section-copy">
-                Deleted{' '}
-                {String(
-                  (deleteResponse.totalDeleted as number | string | undefined) ??
-                    'N/A',
-                )}{' '}
-                of{' '}
-                {String(
-                  (deleteResponse.totalFound as number | string | undefined) ??
-                    'N/A',
-                )}{' '}
-                deals.
-              </p>
-              {deleteStatuses.length > 0 ? (
-                <div className="delete-statuses">
-                  {deleteStatuses.map((status, index) => (
-                    <article
-                      className="delete-status-card"
-                      key={`${status.dealId ?? 'deal'}-${index}`}
-                    >
-                      <p className="item-priority">
-                        {status.dealId ?? 'Deal ID missing'}
-                      </p>
-                      <p>{status.message ?? 'No status message'}</p>
+        {response && (
+          <>
+            <section className="card response-card">
+              <h2>Action items</h2>
+              {actionItems.length > 0 ? (
+                <div className="item-grid">
+                  {actionItems.map((item, index) => (
+                    <article className="item-card" key={`${item.description ?? index}-${index}`}>
+                      <p className="item-priority">{(item.priority as string) ?? 'Priority: N/A'}</p>
+                      <h3>{(item.description as string) ?? 'No description'}</h3>
                       <p className="item-meta">
-                        Status:{' '}
-                        <span>
-                          {status.deleted ? 'Deleted ✓' : 'Not deleted'}
-                        </span>
+                        <span>Assignee: {(item.assignee as string) ?? 'Unassigned'}</span>
+                        <span>Deadline: {(item.deadline as string) ?? 'None'}</span>
                       </p>
                     </article>
                   ))}
                 </div>
               ) : (
-                <p className="empty-state">No statuses were returned.</p>
+                <p className="empty-state">The response did not include action items.</p>
               )}
-              <pre className="json-block">
-                {JSON.stringify(deleteResponse, null, 2)}
-              </pre>
-            </>
-          ) : (
-            <p className="error-text">
-              Delete error: {deleteErrorMessage}
-            </p>
-          )}
-        </section>
+            </section>
+
+            <section className="card response-card">
+              <h2>HubSpot tasks</h2>
+              {taskResults.length > 0 ? (
+                <div className="task-list">
+                  {taskResults.map((task, index) => (
+                    <article className="task-card" key={`${task.hubspotTaskId ?? index}-${index}`}>
+                      <div>
+                        <p className="item-priority">Task ID: {(task.hubspotTaskId as string) ?? 'N/A'}</p>
+                        <h3>{(task.description as string) ?? 'No description'}</h3>
+                      </div>
+                      {(task.hubspotTaskUrl as string) && (
+                        <a
+                          href={task.hubspotTaskUrl as string}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="task-link"
+                        >
+                          Open in HubSpot
+                        </a>
+                      )}
+                    </article>
+                  ))}
+                </div>
+              ) : (
+                <p className="empty-state">No HubSpot tasks were returned.</p>
+              )}
+            </section>
+
+            <section className="card response-card">
+              <h2>Raw JSON response</h2>
+              <pre className="json-block">{JSON.stringify(response, null, 2)}</pre>
+            </section>
+          </>
+        )}
+      </main>
+      {showDeleteModal && (
+        <div
+          className="modal-overlay"
+          role="dialog"
+          aria-modal="true"
+          onClick={closeDeleteModal}
+        >
+          <div className="modal" onClick={(event) => event.stopPropagation()}>
+            <button
+              type="button"
+              className="modal-close"
+              onClick={closeDeleteModal}
+              aria-label="Close delete results"
+            >
+              ×
+            </button>
+            <h2>Delete all deals</h2>
+            {deleteErrorMessage ? (
+              <p className="error-text">Error: {deleteErrorMessage}</p>
+            ) : deleteResponse ? (
+              <>
+                <p className="section-copy">
+                  Deleted{' '}
+                  {String(
+                    (deleteResponse.totalDeleted as number | string | undefined) ??
+                      'N/A',
+                  )}{' '}
+                  of{' '}
+                  {String(
+                    (deleteResponse.totalFound as number | string | undefined) ??
+                      'N/A',
+                  )}{' '}
+                  deals.
+                </p>
+                {deleteStatuses.length > 0 ? (
+                  <div className="delete-statuses">
+                    {deleteStatuses.map((status, index) => (
+                      <article
+                        className="delete-status-card"
+                        key={`${status.dealId ?? 'deal'}-${index}`}
+                      >
+                        <p className="item-priority">
+                          {status.dealId ?? 'Deal ID missing'}
+                        </p>
+                        <p>{status.message ?? 'No status message'}</p>
+                        <p className="item-meta">
+                          Status:{' '}
+                          <span>
+                            {status.deleted ? 'Deleted ✓' : 'Not deleted'}
+                          </span>
+                        </p>
+                      </article>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="empty-state">No statuses were returned.</p>
+                )}
+                <pre className="json-block">
+                  {JSON.stringify(deleteResponse, null, 2)}
+                </pre>
+              </>
+            ) : (
+              <p className="section-copy">Waiting for delete response...</p>
+            )}
+            <button
+              type="button"
+              className="modal-close-button"
+              onClick={closeDeleteModal}
+            >
+              Close
+            </button>
+          </div>
+        </div>
       )}
-    </main>
+    </>
   )
 }
 
