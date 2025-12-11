@@ -36,8 +36,11 @@ type TaskResult = {
 function App() {
   const [transcript, setTranscript] = useState(defaultTranscript)
   const [response, setResponse] = useState<Record<string, unknown> | null>(null)
+  const [deleteResponse, setDeleteResponse] = useState<Record<string, unknown> | null>(null)
   const [loading, setLoading] = useState(false)
   const [errorMessage, setErrorMessage] = useState('')
+  const [deleteLoading, setDeleteLoading] = useState(false)
+  const [deleteErrorMessage, setDeleteErrorMessage] = useState('')
 
   const actionItems = (Array.isArray(response?.actionItems)
     ? response.actionItems
@@ -45,11 +48,32 @@ function App() {
   const taskResults = (Array.isArray(response?.taskResults)
     ? response.taskResults
     : []) as TaskResult[]
+  const deleteStatuses = (Array.isArray(deleteResponse?.statuses)
+    ? deleteResponse.statuses
+    : []) as {
+    dealId?: string
+    deleted?: boolean
+    message?: string
+  }[]
+  const statusChipLabel = deleteLoading
+    ? 'Deleting…'
+    : deleteErrorMessage
+    ? 'Delete failed'
+    : deleteResponse
+    ? `Deleted ${String(
+        deleteResponse.totalDeleted ?? '0',
+      )} of ${String(deleteResponse.totalFound ?? '0')} deals`
+    : errorMessage
+    ? 'Error occurred'
+    : response
+    ? 'Response received'
+    : 'Ready to submit'
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
     setErrorMessage('')
     setResponse(null)
+    setDeleteResponse(null)
     setLoading(true)
 
     try {
@@ -76,6 +100,36 @@ function App() {
       setErrorMessage(message)
     } finally {
       setLoading(false)
+    }
+  }
+
+  const handleDeleteDeals = async () => {
+    setDeleteErrorMessage('')
+    setDeleteResponse(null)
+    setDeleteLoading(true)
+
+    try {
+      const res = await fetch(
+        'http://44.198.115.169:9090/api/hubspot/delete-all-deals',
+        {
+          method: 'DELETE',
+          headers: {
+            Accept: '*/*',
+          },
+        },
+      )
+
+      if (!res.ok) {
+        throw new Error(`${res.status} ${res.statusText}`)
+      }
+
+      const payload = await res.json()
+      setDeleteResponse(payload)
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Unknown error'
+      setDeleteErrorMessage(message)
+    } finally {
+      setDeleteLoading(false)
     }
   }
 
@@ -108,15 +162,20 @@ function App() {
             <button type="submit" disabled={loading}>
               {loading ? 'Sending…' : 'Run POST'}
             </button>
-            <span className="status-chip">
-              {errorMessage
-                ? 'Error occurred'
-                : response
-                ? 'Response received'
-                : 'Ready to submit'}
-            </span>
+            <button
+              type="button"
+              className="secondary-button"
+              disabled={!response || deleteLoading}
+              onClick={handleDeleteDeals}
+            >
+              {deleteLoading ? 'Deleting…' : 'Delete all deals'}
+            </button>
+            <span className="status-chip">{statusChipLabel}</span>
           </div>
           {errorMessage && <p className="error-text">Error: {errorMessage}</p>}
+          {deleteErrorMessage && (
+            <p className="error-text">Delete error: {deleteErrorMessage}</p>
+          )}
         </form>
       </section>
 
@@ -175,6 +234,58 @@ function App() {
             <pre className="json-block">{JSON.stringify(response, null, 2)}</pre>
           </section>
         </>
+      )}
+      {(deleteResponse || deleteErrorMessage) && (
+        <section className="card response-card">
+          <h2>Delete-all-deals result</h2>
+          {deleteResponse ? (
+            <>
+              <p className="section-copy">
+                Deleted{' '}
+                {String(
+                  (deleteResponse.totalDeleted as number | string | undefined) ??
+                    'N/A',
+                )}{' '}
+                of{' '}
+                {String(
+                  (deleteResponse.totalFound as number | string | undefined) ??
+                    'N/A',
+                )}{' '}
+                deals.
+              </p>
+              {deleteStatuses.length > 0 ? (
+                <div className="delete-statuses">
+                  {deleteStatuses.map((status, index) => (
+                    <article
+                      className="delete-status-card"
+                      key={`${status.dealId ?? 'deal'}-${index}`}
+                    >
+                      <p className="item-priority">
+                        {status.dealId ?? 'Deal ID missing'}
+                      </p>
+                      <p>{status.message ?? 'No status message'}</p>
+                      <p className="item-meta">
+                        Status:{' '}
+                        <span>
+                          {status.deleted ? 'Deleted ✓' : 'Not deleted'}
+                        </span>
+                      </p>
+                    </article>
+                  ))}
+                </div>
+              ) : (
+                <p className="empty-state">No statuses were returned.</p>
+              )}
+              <pre className="json-block">
+                {JSON.stringify(deleteResponse, null, 2)}
+              </pre>
+            </>
+          ) : (
+            <p className="error-text">
+              Delete error: {deleteErrorMessage}
+            </p>
+          )}
+        </section>
       )}
     </main>
   )
