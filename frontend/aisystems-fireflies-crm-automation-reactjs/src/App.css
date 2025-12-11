@@ -268,3 +268,57 @@ h1 {
   font-size: 0.85rem;
   color: #475569;
 }
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.65);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  z-index: 40;
+}
+
+.modal {
+  background: #fff;
+  border-radius: 16px;
+  max-width: 700px;
+  width: min(90vw, 700px);
+  padding: 2rem;
+  position: relative;
+  box-shadow: 0 30px 80px rgba(15, 23, 42, 0.25);
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.modal-close {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  border: none;
+  background: transparent;
+  font-size: 1.25rem;
+  cursor: pointer;
+  color: #475569;
+}
+
+.modal-close-button {
+  display: block;
+  width: 100%;
+  margin-top: 1.5rem;
+  border: none;
+  border-radius: 12px;
+  padding: 0.9rem 1.25rem;
+  background: linear-gradient(135deg, #586adc, #7688ff);
+  color: #fff;
+  font-weight: 600;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: transform 120ms ease, box-shadow 120ms ease;
+}
+
+.modal-close-button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 12px 28px rgba(88, 106, 220, 0.3);
+}
