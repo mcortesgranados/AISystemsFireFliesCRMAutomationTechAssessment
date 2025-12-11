@@ -1,4 +1,4 @@
-import { FormEvent, useState } from 'react'
+import { FormEvent, useEffect, useRef, useState } from 'react'
 import './App.css'
 
 const defaultTranscript = `Meeting Date: November 15, 2024
@@ -33,6 +33,40 @@ type TaskResult = {
   hubspotTaskUrl?: string
 }
 
+type SampleSummary = {
+  meetingDate?: string
+  participants?: string
+  highlights: string[]
+}
+
+const buildSampleSummary = (content: string): SampleSummary => {
+  const meetingDate =
+    content.match(/\*\*Meeting Date:\*\*\s*(.+)/)?.[1]?.trim() ??
+    content.match(/Meeting Date:\s*(.+)/)?.[1]?.trim()
+  const participants =
+    content.match(/\*\*Participants:\*\*\s*(.+)/)?.[1]?.trim() ??
+    content.match(/Participants:\s*(.+)/)?.[1]?.trim()
+
+  const highlightRegex = /(First|Second|Third|Fourth|Lastly|Just to recap)/i
+  const cleanupLine = (line: string) =>
+    line.replace(/\*\*[^*]+\*\*/g, '').replace(/\*/g, '').trim()
+
+  const segments = content
+    .split(/\n+/)
+    .map((line) => cleanupLine(line))
+    .filter((line) => line.length > 0)
+
+  const highlights = segments
+    .filter((line) => highlightRegex.test(line))
+    .map((line) => line.replace(/\s+/g, ' ').trim())
+
+  return {
+    meetingDate,
+    participants,
+    highlights,
+  }
+}
+
 function App() {
   const [transcript, setTranscript] = useState(defaultTranscript)
   const [response, setResponse] = useState<Record<string, unknown> | null>(null)
@@ -44,6 +78,11 @@ function App() {
   const [loadingSample, setLoadingSample] = useState(false)
   const [sampleError, setSampleError] = useState('')
   const [showDeleteModal, setShowDeleteModal] = useState(false)
+  const [showProcessingModal, setShowProcessingModal] = useState(false)
+  const [processingSeconds, setProcessingSeconds] = useState(0)
+  const [showSummaryModal, setShowSummaryModal] = useState(false)
+  const [summaryData, setSummaryData] = useState<SampleSummary | null>(null)
+  const processingTimeoutRef = useRef<number | null>(null)
 
   const actionItems = (Array.isArray(response?.actionItems)
     ? response.actionItems
@@ -73,6 +112,7 @@ function App() {
     : 'Ready to submit'
 
   const closeDeleteModal = () => setShowDeleteModal(false)
+  const closeSummaryModal = () => setShowSummaryModal(false)
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
@@ -172,13 +212,54 @@ function App() {
       }
 
       setTranscript(messageContent)
+      const summary = buildSampleSummary(messageContent)
+      setSummaryData(summary)
+      setShowSummaryModal(false)
+      setShowProcessingModal(true)
+      setProcessingSeconds(0)
+      if (processingTimeoutRef.current) {
+        window.clearTimeout(processingTimeoutRef.current)
+      }
+      processingTimeoutRef.current = window.setTimeout(() => {
+        setShowProcessingModal(false)
+        setShowSummaryModal(true)
+        processingTimeoutRef.current = null
+      }, 1400)
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Unknown error'
       setSampleError(message)
+      setShowProcessingModal(false)
+      setShowSummaryModal(false)
+      if (processingTimeoutRef.current) {
+        window.clearTimeout(processingTimeoutRef.current)
+        processingTimeoutRef.current = null
+      }
     } finally {
       setLoadingSample(false)
     }
   }
+
+  useEffect(() => {
+    if (!showProcessingModal) {
+      return
+    }
+
+    const interval = window.setInterval(() => {
+      setProcessingSeconds((seconds) => seconds + 1)
+    }, 1000)
+
+    return () => {
+      window.clearInterval(interval)
+    }
+  }, [showProcessingModal])
+
+  useEffect(() => {
+    return () => {
+      if (processingTimeoutRef.current) {
+        window.clearTimeout(processingTimeoutRef.current)
+      }
+    }
+  }, [])
 
   return (
     <>
@@ -206,33 +287,33 @@ function App() {
               onChange={(event) => setTranscript(event.target.value)}
             />
 
-          <div className="form-actions">
-            <button type="submit" disabled={loading}>
-              {loading ? 'Sending…' : 'Run POST'}
-            </button>
-            <button
-              type="button"
-              className="secondary-button"
-              disabled={!response || deleteLoading}
-              onClick={handleDeleteDeals}
-            >
-              {deleteLoading ? 'Deleting…' : 'Delete all deals'}
-            </button>
-            <button
-              type="button"
-              className="tertiary-button"
-              disabled={loadingSample}
-              onClick={handleLoadSampleTranscript}
-            >
-              {loadingSample ? 'Loading sample…' : 'Load sample transcript'}
-            </button>
-            <span className="status-chip">{statusChipLabel}</span>
-          </div>
-          {errorMessage && <p className="error-text">Error: {errorMessage}</p>}
-          {sampleError && (
-            <p className="error-text">Sample error: {sampleError}</p>
-          )}
-        </form>
+            <div className="form-actions">
+              <button type="submit" disabled={loading}>
+                {loading ? 'Sending…' : 'Run POST'}
+              </button>
+              <button
+                type="button"
+                className="secondary-button"
+                disabled={!response || deleteLoading}
+                onClick={handleDeleteDeals}
+              >
+                {deleteLoading ? 'Deleting…' : 'Delete all deals'}
+              </button>
+              <button
+                type="button"
+                className="tertiary-button"
+                disabled={loadingSample}
+                onClick={handleLoadSampleTranscript}
+              >
+                {loadingSample ? 'Loading sample…' : 'Load sample transcript'}
+              </button>
+              <span className="status-chip">{statusChipLabel}</span>
+            </div>
+            {errorMessage && <p className="error-text">Error: {errorMessage}</p>}
+            {sampleError && (
+              <p className="error-text">Sample error: {sampleError}</p>
+            )}
+          </form>
       </section>
 
         {response && (
@@ -292,6 +373,68 @@ function App() {
           </>
         )}
       </main>
+      {showProcessingModal && (
+        <div
+          className="modal-overlay processing-overlay"
+          role="presentation"
+          onClick={(event) => event.stopPropagation()}
+        >
+          <div className="modal" onClick={(event) => event.stopPropagation()}>
+            <h2>Processing transcript</h2>
+            <p className="section-copy">Extracting the summary report…</p>
+            <p className="processing-timer">
+              Time elapsed: {processingSeconds}s
+            </p>
+          </div>
+        </div>
+      )}
+      {showSummaryModal && (
+        <div
+          className="modal-overlay"
+          role="dialog"
+          aria-modal="true"
+          onClick={closeSummaryModal}
+        >
+          <div className="modal" onClick={(event) => event.stopPropagation()}>
+            <button
+              type="button"
+              className="modal-close"
+              onClick={closeSummaryModal}
+              aria-label="Close summary report"
+            >
+              ×
+            </button>
+            <h2>Summary report</h2>
+            <p className="section-copy">
+              Meeting Date:{' '}
+              {summaryData?.meetingDate ?? 'No meeting date available'}
+            </p>
+            <p className="section-copy">
+              Participants:{' '}
+              {summaryData?.participants ?? 'No participants listed'}
+            </p>
+            {summaryData?.highlights.length ? (
+              <ul className="summary-highlights">
+                {summaryData.highlights.map((highlight, index) => (
+                  <li key={`summary-${index}`}>{highlight}</li>
+                ))}
+              </ul>
+            ) : (
+              <p className="empty-state">No highlights were extracted.</p>
+            )}
+            <pre className="json-block">
+              {JSON.stringify(summaryData ?? {}, null, 2)}
+            </pre>
+            <button
+              type="button"
+              className="modal-close-button"
+              onClick={closeSummaryModal}
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      )}
       {showDeleteModal && (
         <div
           className="modal-overlay"
