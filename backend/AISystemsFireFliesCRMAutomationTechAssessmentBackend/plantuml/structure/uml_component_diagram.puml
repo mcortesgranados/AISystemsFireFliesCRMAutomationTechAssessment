@@ -1,0 +1,57 @@
+@startuml
+skinparam componentStyle rectangle
+
+package "Controller Layer" {
+  [OpenAITestController] as OAController
+  [HubSpotTaskTestController] as HubController
+}
+
+package "Service Layer" {
+  [OpenAIService] as OpenAIService
+  [HubSpotTaskService] as HubSpotService
+  [ActionItemExtractorService] as ActionExtractor
+}
+
+package "DTOs" {
+  [HubSpotTaskCreationReport] as TaskReport
+  [HubSpotDealDeletionReport] as DeleteReport
+}
+
+package "Infrastructure" {
+  [Swagger UI & Web Config] as SwaggerConfig
+  [Database Config (HikariDataSource)] as DataSourceConfig
+}
+
+package "External APIs" {
+  component "OpenAI API (gpt-4o-mini)" as OpenAIAPI
+  component "HubSpot CRM" as HubSpotCRM
+}
+
+OAController --> OpenAIService : calls
+OAController --> HubSpotService : delegates creation & deletion
+HubController --> HubSpotService : delegates task creation/deletion
+OpenAIService --> TaskReport : produces
+HubSpotService --> TaskReport : reports creation
+HubSpotService --> DeleteReport : reports deletion
+OpenAIService --> OpenAIAPI : queries chat completions
+HubSpotService --> HubSpotCRM : posts deals, deletes deals
+SwaggerConfig --> OAController : exposes endpoints
+SwaggerConfig --> HubController : exposes endpoints
+DataSourceConfig ..> HubSpotService : provides JDBC config (if used)
+ActionExtractor --> OpenAIService : uses for extraction
+ActionExtractor --> HubSpotService : forwards tasks
+ActionExtractor --> TaskReport : returns aggregated results
+
+note top of OAController
+  Entry point for OpenAI + HubSpot flows
+end note
+
+note top of HubSpotService
+  Wraps HubSpot deal/task API interactions
+end note
+
+note left of OpenAIAPI
+  gpt-4o-mini\nchat-completions\nused by services
+end note
+
+@enduml
