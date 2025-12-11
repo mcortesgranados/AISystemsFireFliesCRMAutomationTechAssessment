@@ -1,0 +1,37 @@
+@startuml
+start
+
+partition "marketing flow" {
+  :Request random transcript;
+  :OpenAIService generates transcript;
+  if (Transcript acceptable?) then (yes)
+    :Return transcript to user;
+  else (no)
+    :Retry with stricter prompt;
+    :Return fallback transcript;
+  endif
+}
+
+partition "action item extraction" {
+  :Submit transcript to OpenAIService;
+  :Parse JSON action items;
+  if (Parsing succeeded?) then (yes)
+    :Send items to HubSpotTaskService;
+  else (no)
+    :Record parsing error;
+    stop
+  endif
+  :Track metadata in HubSpotTaskCreationReport;
+}
+
+partition "deal management" {
+  split
+    :HubSpotTaskService posts new deals;
+  split again
+    :HubSpotTaskService deletes all deals via pagination;
+    :Build HubSpotDealDeletionReport;
+  end split
+}
+
+stop
+@enduml
