@@ -1,0 +1,29 @@
+@startuml
+start
+
+:Receive transcript creation request;
+partition "OpenAI Flow" {
+  :Delegate to OpenAITestController;
+  :ActionItemExtractorService requests completion;
+  :OpenAIService returns transcript & items;
+}
+if (Items valid?) then (yes)
+  :HubSpotTaskService creates deals;
+  :Build HubSpotTaskCreationReport;
+else (no)
+  :Log extraction failure;
+endif
+
+partition "Cleanup Flow" {
+  :HubSpotTaskService deletes all deals;
+  :Build HubSpotDealDeletionReport;
+}
+
+:Return both reports to client;
+stop
+
+note right
+  High-level overview of the transcript-to-task flow plus cleanup.
+end note
+
+@enduml
