@@ -347,3 +347,22 @@ h1 {
   transform: translateY(-1px);
   box-shadow: 0 12px 28px rgba(88, 106, 220, 0.3);
 }
+
+.processing-overlay {
+  cursor: default;
+}
+
+.processing-timer {
+  margin: 0.5rem 0 0;
+  font-weight: 600;
+}
+
+.summary-highlights {
+  margin: 1rem 0;
+  padding-left: 1rem;
+  color: #0f172a;
+}
+
+.summary-highlights li {
+  margin-bottom: 0.4rem;
+}
