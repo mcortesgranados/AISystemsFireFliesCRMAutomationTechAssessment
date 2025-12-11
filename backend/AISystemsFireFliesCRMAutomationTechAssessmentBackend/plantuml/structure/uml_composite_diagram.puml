@@ -1,0 +1,43 @@
+@startuml
+skinparam componentStyle rectangle
+skinparam classAttributeIconSize 0
+
+package "OpenAI Flow" {
+  component OpenAITestController {
+    component OpenAIRequestHandler
+    component OpenAIResponseMapper
+  }
+  OpenAITestController ..> OpenAIRequestHandler : delegates
+  OpenAIRequestHandler --> OpenAIService
+  OpenAIService --> OpenAIResponseMapper
+}
+
+package "HubSpot Flow" {
+  component HubSpotTaskTestController {
+    component HubSpotRequestHandler
+  }
+  HubSpotTaskTestController ..> HubSpotRequestHandler
+  HubSpotRequestHandler --> HubSpotTaskService
+  HubSpotTaskService --> HubSpotDealDeletionReport
+  HubSpotTaskService --> HubSpotTaskCreationReport
+}
+
+package "Shared Services" {
+  [ActionItemExtractorService]
+}
+[ActionItemExtractorService] --> [OpenAIService]
+[ActionItemExtractorService] --> [HubSpotTaskService]
+
+note top of [OpenAIRequestHandler]
+  Builds prompts and forwards to OpenAIService
+end note
+
+note top of [HubSpotRequestHandler]
+  Orchestrates deal creation/deletion paths
+end note
+
+note right of ActionItemExtractorService
+  Used by both REST controllers when converting transcripts to HubSpot tasks
+end note
+
+@enduml
