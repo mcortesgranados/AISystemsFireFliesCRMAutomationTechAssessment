@@ -1,0 +1,32 @@
+@startuml
+[*] --> Idle
+
+state Idle {
+  [*] --> AwaitingRequest
+  AwaitingRequest --> ProcessingTranscript : request arrives
+}
+
+state ProcessingTranscript {
+  [*] --> GeneratingSample
+  GeneratingSample --> ExtractingItems : success
+  ExtractingItems --> CreatingHubSpotTasks : items parsed
+  CreatingHubSpotTasks --> DeletingDeals : tasks persisted
+  DeletingDeals --> Reporting : deletion finished
+  Reporting --> Idle : response sent
+}
+
+state ErrorHandling {
+  [*] --> Logging
+  Logging --> Idle : fallback response
+}
+
+CreatingHubSpotTasks --> ErrorHandling : HubSpot error
+GeneratingSample --> ErrorHandling : OpenAI timeout
+ExtractingItems --> ErrorHandling : parse failure
+DeletingDeals --> ErrorHandling : deletion failure
+
+note right of ProcessingTranscript
+  Represents the sequential stages the flow moves through.
+end note
+
+@enduml
