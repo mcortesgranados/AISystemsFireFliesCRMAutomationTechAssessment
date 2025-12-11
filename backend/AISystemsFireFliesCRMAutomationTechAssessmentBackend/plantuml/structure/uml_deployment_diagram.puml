@@ -1,0 +1,45 @@
+@startuml
+node "AISystems Backend Server" {
+  node "Spring Boot Application" {
+    component "Application" as App
+    component "OpenAITestController" as OAController
+    component "HubSpotTaskTestController" as HubController
+    component "ActionItemExtractorService" as ActionService
+    component "OpenAIService" as OAService
+    component "HubSpotTaskService" as HubService
+    component "HubSpotTaskServiceRunner" as Runner
+  }
+}
+
+database "MySQL / RDS" as Database
+artifact "Swagger UI (Webjar + Custom Controller)" as SwaggerUI
+
+cloud "OpenAI Cloud" as OpenAICloud
+cloud "HubSpot Platform" as HubSpotCloud
+
+App --> OAController
+App --> HubController
+App --> ActionService
+App --> Runner
+OAController --> OAService
+OAController --> HubService
+HubController --> HubService
+OAService --> OpenAICloud : "Chat Completions"
+HubService --> HubSpotCloud : "Deal & Task API"
+Runner --> HubService
+App --> SwaggerUI
+HubService --> Database : "optional audit/logging via JDBC"
+
+note right of OAService
+  Calls OpenAI API with private app token
+end note
+
+note right of HubService
+  Manages deal/task creations + bulk deletions
+end note
+
+note top of Database
+  Provided by AISystems DataSource configuration
+end note
+
+@enduml
