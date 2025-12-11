@@ -1,0 +1,26 @@
+@startuml
+actor ApiClient
+participant "OpenAITestController" as Controller
+participant "ActionItemExtractorService" as Extractor
+participant "OpenAIService" as OpenAI
+participant "HubSpotTaskService" as HubSpot
+participant "HubSpotTaskCreationReport" as CreationReport
+participant "HubSpotDealDeletionReport" as DeletionReport
+
+ApiClient -> Controller: POST /create-deal-from-transcript
+Controller -> Extractor: extractActionItems(transcript)
+Extractor -> OpenAI: getCompletion(prompt)
+OpenAI --> Extractor: raw response
+Extractor --> Controller: parsed action items
+Controller -> HubSpot: createTasksFromActionItems(items)
+HubSpot --> CreationReport: creation summary
+
+activate Controller
+Controller -> HubSpot: deleteAllHubSpotDeals()
+HubSpot -> HubSpot: paginate deals
+HubSpot -> HubSpot: delete deal
+HubSpot --> DeletionReport: deletion summary
+deactivate Controller
+
+ApiClient <-- Controller: Response { creationReport, deletionReport }
+@enduml
