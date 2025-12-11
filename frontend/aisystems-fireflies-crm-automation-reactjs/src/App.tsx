@@ -21,7 +21,7 @@ Lisa: Of course! That's what we're here for. I'll check in with you on Friday to
 Jennifer Martinez: Sounds great. Thanks, Lisa!
 Lisa: Anytime. Talk soon!`
 
-const API_BASE_URL = 'https://44.198.115.169:9090'
+const API_BASE_URL = 'http://44.198.115.169:9090'
 
 type ActionItem = {
   description?: string
