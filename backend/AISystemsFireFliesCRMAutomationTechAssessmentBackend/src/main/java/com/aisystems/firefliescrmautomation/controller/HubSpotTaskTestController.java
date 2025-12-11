@@ -1,5 +1,6 @@
 package com.aisystems.firefliescrmautomation.controller;
 
+import com.aisystems.firefliescrmautomation.dto.HubSpotDealDeletionReport;
 import com.aisystems.firefliescrmautomation.service.HubSpotTaskService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -41,4 +42,22 @@ public class HubSpotTaskTestController {
             @RequestParam(required = false) String assignee) {
         return hubSpotTaskService.createTask(description, dueDate, priority, assignee);
     }
+
+    /**
+     * Delete all HubSpot deals
+     * @author Manuela Cortés Granados (manuelacortesgranados@gmail.com)
+     * @since 11 December 2025 02:07 AM GMT -5 Bogotá DC Colombia
+     */
+
+    @Operation(
+        summary = "(deleteAllHubSpotDeals) Delete all HubSpot deals",
+        description = "(deleteAllHubSpotDeals) Deletes every deal in HubSpot using pagination and logs the result."
+    )
+    @DeleteMapping("/delete-all-deals")
+    public HubSpotDealDeletionReport deleteAllHubSpotDeals() {
+        return hubSpotTaskService.deleteAllHubSpotDeals();
+    }
+
+
+
 }
