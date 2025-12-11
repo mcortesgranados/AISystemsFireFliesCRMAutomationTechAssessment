@@ -1,0 +1,34 @@
+@startuml
+title Transcript-to-HubSpot Timing Diagram
+robust
+
+concise "ApiClient" as ApiClient
+concise "OpenAITestController" as Controller
+concise "OpenAIService" as OpenAI
+concise "HubSpotTaskService" as HubSpot
+
+beat
+ApiClient is Idle
+Controller is WaitingRequest
+
+== Request ==
+Controller becomes ProcessingPrompt
+OpenAI becomes Thinking
+Controller becomes WaitingCompletion
+OpenAI becomes Responded
+OpenAIServiceTiming
+Controller becomes ParsingItems
+Controller becomes CallingHubSpot
+HubSpot becomes PostingDeals
+HubSpot becomes DeletingDeals
+Controller becomes Reporting
+
+== Response ==
+Controller becomes Responded
+ApiClient becomes Received
+
+note right of HubSpot
+  Bulk delete runs while create task response returns
+end note
+
+@enduml
