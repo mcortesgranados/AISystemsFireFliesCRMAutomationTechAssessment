@@ -41,6 +41,8 @@ function App() {
   const [errorMessage, setErrorMessage] = useState('')
   const [deleteLoading, setDeleteLoading] = useState(false)
   const [deleteErrorMessage, setDeleteErrorMessage] = useState('')
+  const [loadingSample, setLoadingSample] = useState(false)
+  const [sampleError, setSampleError] = useState('')
   const [showDeleteModal, setShowDeleteModal] = useState(false)
 
   const actionItems = (Array.isArray(response?.actionItems)
@@ -140,6 +142,44 @@ function App() {
     }
   }
 
+  const handleLoadSampleTranscript = async () => {
+    setSampleError('')
+    setLoadingSample(true)
+
+    try {
+      const res = await fetch(
+        'http://44.198.115.169:9090/api/openai/generate-sample-transcript-full',
+        {
+          method: 'GET',
+          headers: {
+            Accept: '*/*',
+          },
+        },
+      )
+
+      if (!res.ok) {
+        throw new Error(`${res.status} ${res.statusText}`)
+      }
+
+      const payload = await res.json()
+      const messageContent =
+        payload?.choices?.[0]?.message?.content ??
+        payload?.choices?.[0]?.message ??
+        ''
+
+      if (typeof messageContent !== 'string') {
+        throw new Error('Sample transcript payload malformed')
+      }
+
+      setTranscript(messageContent)
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Unknown error'
+      setSampleError(message)
+    } finally {
+      setLoadingSample(false)
+    }
+  }
+
   return (
     <>
       <main className="app-shell">
@@ -166,23 +206,34 @@ function App() {
               onChange={(event) => setTranscript(event.target.value)}
             />
 
-            <div className="form-actions">
-              <button type="submit" disabled={loading}>
-                {loading ? 'Sending…' : 'Run POST'}
-              </button>
-              <button
-                type="button"
-                className="secondary-button"
-                disabled={!response || deleteLoading}
-                onClick={handleDeleteDeals}
-              >
-                {deleteLoading ? 'Deleting…' : 'Delete all deals'}
-              </button>
-              <span className="status-chip">{statusChipLabel}</span>
-            </div>
-            {errorMessage && <p className="error-text">Error: {errorMessage}</p>}
-          </form>
-        </section>
+          <div className="form-actions">
+            <button type="submit" disabled={loading}>
+              {loading ? 'Sending…' : 'Run POST'}
+            </button>
+            <button
+              type="button"
+              className="secondary-button"
+              disabled={!response || deleteLoading}
+              onClick={handleDeleteDeals}
+            >
+              {deleteLoading ? 'Deleting…' : 'Delete all deals'}
+            </button>
+            <button
+              type="button"
+              className="tertiary-button"
+              disabled={loadingSample}
+              onClick={handleLoadSampleTranscript}
+            >
+              {loadingSample ? 'Loading sample…' : 'Load sample transcript'}
+            </button>
+            <span className="status-chip">{statusChipLabel}</span>
+          </div>
+          {errorMessage && <p className="error-text">Error: {errorMessage}</p>}
+          {sampleError && (
+            <p className="error-text">Sample error: {sampleError}</p>
+          )}
+        </form>
+      </section>
 
         {response && (
           <>
