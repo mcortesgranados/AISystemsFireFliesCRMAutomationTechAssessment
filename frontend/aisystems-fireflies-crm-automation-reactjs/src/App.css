@@ -135,6 +135,31 @@ h1 {
   box-shadow: 0 12px 28px rgba(15, 23, 42, 0.1);
 }
 
+.form-actions .tertiary-button {
+  border: none;
+  border-radius: 999px;
+  padding: 0.75rem 1.5rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  color: #fff;
+  background: linear-gradient(135deg, #10b981, #34d399);
+  transition: transform 120ms ease, box-shadow 120ms ease;
+  min-width: 200px;
+}
+
+.form-actions .tertiary-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.form-actions .tertiary-button:not(:disabled):hover {
+  transform: translateY(-1px);
+  box-shadow: 0 12px 28px rgba(16, 185, 129, 0.3);
+}
+
 .status-chip {
   font-size: 0.85rem;
   color: #4a5568;
