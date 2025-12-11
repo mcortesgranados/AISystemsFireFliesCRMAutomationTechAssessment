@@ -1,0 +1,76 @@
+<html>
+<head>
+  <title>Report 5.3.2 — Smart Feature Justification</title>
+  <style>
+  body { font-family: 'Segoe UI', Arial, sans-serif; background: #fafbfc; color: #23272f; margin: 0; padding: 0; }
+  .container { max-width: 950px; margin: 40px auto; background: #fff; box-shadow: 0 8px 32px rgba(0,0,0,0.08); border-radius: 10px; padding: 32px 40px; }
+  h1 { color: #1565c0; }
+  h2 { color: #2e7d32; margin-top: 32px; }
+  h3 { color: #7b1fa2; margin-top: 24px; }
+  .note { background: #e3f2fd; border-left: 4px solid #1976d2; padding: 16px 20px; margin: 18px 0; border-radius: 7px; }
+  .note ul { list-style: disc inside; margin: 0; padding-left: 1.2em; }
+  .note li { margin-bottom: 3px; line-height: 1.35; }
+  .note p { margin: 0 0 6px 0; line-height: 1.5; }
+  .footer { text-align: right; color: #888; font-size: 1em; margin-top: 40px; }
+  .tag { background: #e3f2fd; color: #1565c0; border-radius: 4px; padding: 3px 8px; margin-left: 6px; font-size: 0.95em; }
+  dt { color: #2e7d32; font-weight: bold; margin-top: 10px; }
+  dd { margin-bottom: 10px; }
+  .params table { border-collapse: collapse; width: 100%; margin: 10px 0; }
+  .params th, .params td { border: 1px solid #ccc; padding: 6px; }
+  .important { background: #fffde7; border-left: 4px solid #fbc02d; padding: 12px 18px; margin: 18px 0; border-radius: 5px; }
+  .sideEffects ul, .solid ul { margin: 0; padding-left: 20px; }
+  @media (max-width: 600px) { .container { padding: 16px 8px; } }
+  pre { background: #f6f8fa; padding: 14px; border-radius: 8px; overflow: auto; font-size: 0.92em; }
+  code { font-family: Consolas, 'Courier New', monospace; }
+  .row { display:flex; gap:20px; flex-wrap:wrap; }
+  .col { flex:1 1 420px; }
+  .endpoint { border: 1px solid #e0e0e0; padding: 12px 14px; border-radius: 8px; background: #fff; box-shadow: 0 3px 8px rgba(0,0,0,0.04); }
+  .json { white-space: pre; font-family: Consolas, 'Courier New', monospace; font-size: 0.95em; }
+  .success { color: #2e7d32; font-weight: 600; }
+  .error { color: #c62828; font-weight: 600; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Report 5.3.2 — Smart Features Added<span class="tag">Feature Rationale</span></h1>
+    <p>This document explains the smart capabilities incorporated into the project and why each was necessary.</p>
+
+    <section>
+      <h2>Sample Transcript Generation and Automation</h2>
+      <p>The OpenAI integration can produce narrative meeting transcripts that mirror the Fireflies format. This sample data accelerates testing and allows the automation pipeline to run even without real transcripts.</p>
+      <ul>
+        <li>generateRandomSampleTranscript() returns cleaned narrative text for client testing.</li>
+        <li>The full response endpoint attaches execution metadata so developers can verify latency.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>Real HubSpot Task Creation with Smart Priorities</h2>
+      <p>Action items move to HubSpot as deals with normalized priorities, deadlines, and assignees. The normalization uses keyword detection to map urgency cues to HIGH/MEDIUM/LOW.</p>
+      <ul>
+        <li>Priority defaults to LOW if the extractor cannot determine urgency, ensuring HubSpot receives valid enum values.</li>
+        <li>Reports capture raw HubSpot responses so you can trace which action item created which deal.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>Resetting HubSpot State</h2>
+      <p>The HubSpotDeleteDealsMain tool and deleteAllHubSpotDeals() flow remove all deals by pagination, allowing you to reset test environments quickly.</p>
+      <div class="note">
+        <h3>Smart Cleanup</h3>
+        <ul>
+          <li>The delete flow gathers IDs from paginated responses before issuing deletes.</li>
+          <li>The deletion report lists per-deal status so errant deletions can be audited.</li>
+        </ul>
+      </div>
+    </section>
+
+    <section>
+      <h2>Observability for Smart Flows</h2>
+      <p>Metadata (timestamps/duration) and DTO reports help you detect when OpenAI takes longer or when HubSpot failures happen.</p>
+    </section>
+
+    <div class="footer">Generated documentation for 5.3.2 — Smart features recap</div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,93 @@
+<html><head><title>Component Diagram Documentation</title><style>
+  body { font-family: 'Segoe UI', Arial, sans-serif; background: #fafbfc; color: #23272f; margin: 0; padding: 0; }
+  .container { max-width: 950px; margin: 40px auto; background: #fff; box-shadow: 0 8px 32px rgba(0,0,0,0.08); border-radius: 10px; padding: 32px 40px; }
+  h1 { color: #1565c0; }
+  h2 { color: #2e7d32; margin-top: 32px; }
+  h3 { color: #7b1fa2; margin-top: 24px; }
+  .note { background: #e3f2fd; border-left: 4px solid #1976d2; padding: 16px 20px; margin: 18px 0; border-radius: 7px; }
+  .note ul { list-style: disc inside; margin: 0; padding-left: 1.2em; }
+  .note li { margin-bottom: 3px; line-height: 1.35; }
+  .note p { margin: 0 0 6px 0; line-height: 1.5; }
+  .footer { text-align: right; color: #888; font-size: 1em; margin-top: 40px; }
+  .tag { background: #e3f2fd; color: #1565c0; border-radius: 4px; padding: 3px 8px; margin-left: 6px; font-size: 0.95em; }
+  dt { color: #2e7d32; font-weight: bold; margin-top: 10px; }
+  dd { margin-bottom: 10px; }
+  .params table { border-collapse: collapse; width: 100%; margin: 10px 0; }
+  .params th, .params td { border: 1px solid #ccc; padding: 6px; }
+  .important { background: #fffde7; border-left: 4px solid #fbc02d; padding: 12px 18px; margin: 18px 0; border-radius: 5px; }
+  .sideEffects ul, .solid ul { margin: 0; padding-left: 20px; }
+  @media (max-width: 600px) { .container { padding: 16px 8px; } }
+  pre { background: #f6f8fa; padding: 14px; border-radius: 8px; overflow: auto; font-size: 0.92em; }
+  code { font-family: Consolas, 'Courier New', monospace; }
+  .row { display:flex; gap:20px; flex-wrap:wrap; }
+  .col { flex:1 1 420px; }
+  .endpoint { border: 1px solid #e0e0e0; padding: 12px 14px; border-radius: 8px; background: #fff; box-shadow: 0 3px 8px rgba(0,0,0,0.04); }
+  .json { white-space: pre; font-family: Consolas, 'Courier New', monospace; font-size: 0.95em; }
+  .success { color: #2e7d32; font-weight: 600; }
+  .error { color: #c62828; font-weight: 600; }
+  </style></head><body><div class='container'><h1>Component Diagram<span class='tag'>structure/uml_component_diagram.puml</span></h1><p>Shows component boundaries for controllers, services, DTOs, and how they interact with external APIs and infrastructure.</p><div class='note'><h2>Highlights</h2><ul>
+      <li>Swagger UI config ties controllers</li>
+      <li>External OpenAI and HubSpot systems</li>
+      <li>DataSource config supporting HubSpot service</li>
+    </ul></div><div class='note'><h2>Key Components</h2><ul>
+      <li>Controllers package</li>
+      <li>External APIs</li>
+      <li>Infrastructure nodes</li>
+    </ul></div><h2>Diagram Source</h2><pre><code>@startuml
+skinparam componentStyle rectangle
+
+package "Controller Layer" {
+  [OpenAITestController] as OAController
+  [HubSpotTaskTestController] as HubController
+}
+
+package "Service Layer" {
+  [OpenAIService] as OpenAIService
+  [HubSpotTaskService] as HubSpotService
+  [ActionItemExtractorService] as ActionExtractor
+}
+
+package "DTOs" {
+  [HubSpotTaskCreationReport] as TaskReport
+  [HubSpotDealDeletionReport] as DeleteReport
+}
+
+package "Infrastructure" {
+  [Swagger UI &amp; Web Config] as SwaggerConfig
+  [Database Config (HikariDataSource)] as DataSourceConfig
+}
+
+package "External APIs" {
+  component "OpenAI API (gpt-4o-mini)" as OpenAIAPI
+  component "HubSpot CRM" as HubSpotCRM
+}
+
+OAController --&gt; OpenAIService : calls
+OAController --&gt; HubSpotService : delegates creation &amp; deletion
+HubController --&gt; HubSpotService : delegates task creation/deletion
+OpenAIService --&gt; TaskReport : produces
+HubSpotService --&gt; TaskReport : reports creation
+HubSpotService --&gt; DeleteReport : reports deletion
+OpenAIService --&gt; OpenAIAPI : queries chat completions
+HubSpotService --&gt; HubSpotCRM : posts deals, deletes deals
+SwaggerConfig --&gt; OAController : exposes endpoints
+SwaggerConfig --&gt; HubController : exposes endpoints
+DataSourceConfig ..&gt; HubSpotService : provides JDBC config (if used)
+ActionExtractor --&gt; OpenAIService : uses for extraction
+ActionExtractor --&gt; HubSpotService : forwards tasks
+ActionExtractor --&gt; TaskReport : returns aggregated results
+
+note top of OAController
+  Entry point for OpenAI + HubSpot flows
+end note
+
+note top of HubSpotService
+  Wraps HubSpot deal/task API interactions
+end note
+
+note left of OpenAIAPI
+  gpt-4o-mini\nchat-completions\nused by services
+end note
+
+@enduml
+</code></pre><h2>Guidance</h2><p class='important'>Use this diagram when jumping into the Component Diagram context or when you need to explain the component diagram interactions.</p><div class='footer'>Generated documentation for structure/uml_component_diagram.puml</div></div></body></html>

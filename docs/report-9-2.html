@@ -1,0 +1,115 @@
+<html>
+<head>
+  <title>Project Report 9.2</title>
+  <style>
+  body { font-family: 'Segoe UI', Arial, sans-serif; background: #fafbfc; color: #23272f; margin: 0; padding: 0; }
+  .container { max-width: 950px; margin: 40px auto; background: #fff; box-shadow: 0 8px 32px rgba(0,0,0,0.08); border-radius: 10px; padding: 32px 40px; }
+  h1 { color: #1565c0; }
+  h2 { color: #2e7d32; margin-top: 32px; }
+  h3 { color: #7b1fa2; margin-top: 24px; }
+  .note { background: #e3f2fd; border-left: 4px solid #1976d2; padding: 16px 20px; margin: 18px 0; border-radius: 7px; }
+  .note ul { list-style: disc inside; margin: 0; padding-left: 1.2em; }
+  .note li { margin-bottom: 3px; line-height: 1.35; }
+  .note p { margin: 0 0 6px 0; line-height: 1.5; }
+  .footer { text-align: right; color: #888; font-size: 1em; margin-top: 40px; }
+  .tag { background: #e3f2fd; color: #1565c0; border-radius: 4px; padding: 3px 8px; margin-left: 6px; font-size: 0.95em; }
+  dt { color: #2e7d32; font-weight: bold; margin-top: 10px; }
+  dd { margin-bottom: 10px; }
+  .params table { border-collapse: collapse; width: 100%; margin: 10px 0; }
+  .params th, .params td { border: 1px solid #ccc; padding: 6px; }
+  .important { background: #fffde7; border-left: 4px solid #fbc02d; padding: 12px 18px; margin: 18px 0; border-radius: 5px; }
+  .sideEffects ul, .solid ul { margin: 0; padding-left: 20px; }
+  @media (max-width: 600px) { .container { padding: 16px 8px; } }
+  pre { background: #f6f8fa; padding: 14px; border-radius: 8px; overflow: auto; font-size: 0.92em; }
+  code { font-family: Consolas, 'Courier New', monospace; }
+  .row { display:flex; gap:20px; flex-wrap:wrap; }
+  .col { flex:1 1 420px; }
+  .endpoint { border: 1px solid #e0e0e0; padding: 12px 14px; border-radius: 8px; background: #fff; box-shadow: 0 3px 8px rgba(0,0,0,0.04); }
+  .json { white-space: pre; font-family: Consolas, 'Courier New', monospace; font-size: 0.95em; }
+  .success { color: #2e7d32; font-weight: 600; }
+  .error { color: #c62828; font-weight: 600; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Report 9.2 — System Overview<span class="tag">Written Guide</span></h1>
+    <p>This document serves as the detailed answer to item 9.2, consolidating architectural insights, data flows, and operability guidance for the AISystems FireFlies CRM automation backend.</p>
+
+    <section>
+      <h2>Architecture Summary</h2>
+      <p>The application is a Spring Boot backend that orchestrates OpenAI and HubSpot APIs. Core packages include:</p>
+      <ul>
+        <li><strong>Controllers:</strong> expose REST endpoints for OpenAI interactions and HubSpot task/deal operations.</li>
+        <li><strong>Services:</strong> encapsulate business logic: <code>OpenAIService</code> for completions, <code>HubSpotTaskService</code> for CRM operations, and <code>ActionItemExtractorService</code> for parsing transcripts.</li>
+        <li><strong>Tools/config:</strong> standalone runners (HubSpot property tooling/files) and configuration classes (Swagger, Web config, datasource via Hikari).</li>
+      </ul>
+      <div class="note">
+        <h3>Key Flows</h3>
+        <ul>
+          <li>Transcript generation → OpenAI, returning sample data.</li>
+          <li>Transcript parsing → action items & HubSpot task creation.</li>
+          <li>Conditional cleanup flow that deletes all HubSpot deals (paged API calls).</li>
+        </ul>
+      </div>
+    </section>
+
+    <section>
+      <h2>Detailed Component Insights</h2>
+      <div class="row">
+        <div class="col endpoint">
+          <h3>OpenAITestController</h3>
+          <p>Receives CLI/HTTP prompts, routes them to services, and exposes endpoints for creation, extraction, random transcripts, and metadata reporting.</p>
+        </div>
+        <div class="col endpoint">
+          <h3>OpenAIService</h3>
+          <p>Calls <code>gpt-4o-mini</code> chat completions, handles retries, and surfaces execution timestamp/duration for diagnostics.</p>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col endpoint">
+          <h3>HubSpotTaskService</h3>
+          <p>Creates deals, batches action items, and offers a <code>deleteAllHubSpotDeals()</code> flow that fetches paginated IDs and deletes each, returning structured report DTOs.</p>
+        </div>
+        <div class="col endpoint">
+          <h3>ActionItemExtractorService</h3>
+          <p>Bridges controllers and services, invoking OpenAI completions and converting results into HubSpot-ready payloads.</p>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2>Behavioral & Deployment Diagrams</h2>
+      <p>Refer to the PlantUML diagrams in the <code>plantuml/</code> folder for visualization:</p>
+      <ul>
+        <li><a href="../plantuml/structure/uml_class_diagram.html">Class Diagram</a> for static relationships.</li>
+        <li><a href="../plantuml/behavior/uml_sequence_diagram.html">Sequence Diagram</a> for request lifecycle.</li>
+        <li><a href="../plantuml/behavior/uml_activity_diagram.html">Activity Diagram</a> for workflow segments.</li>
+        <li><a href="../plantuml/structure/uml_deployment_diagram.html">Deployment Diagram</a> for runtime nodes.</li>
+      </ul>
+      <div class="note">
+        <p>All UML files have matching HTML docs under <code>plantuml/behavior</code> and <code>plantuml/structure</code> describing their purpose, highlights, and source.</p>
+      </div>
+    </section>
+
+    <section>
+      <h2>Operations & Usage Guidance</h2>
+      <dt>Env variables required</dt>
+      <dd>Set <code>OPENAI_API_KEY</code> and <code>HUBSPOT_API_KEY</code> before running.</dd>
+      <dt>Swagger UI</dt>
+      <dd>Visit <code>/swagger-ui/</code> once the app is running (custom controller serves the UI).</dd>
+      <dt>HubSpot cleanup</dt>
+      <dd>The deletion endpoint returns <code>HubSpotDealDeletionReport</code> detailing total found/deleted/failed entries.</dd>
+    </section>
+
+    <section>
+      <h2>Testing & Validation</h2>
+      <p>Run Gradle tests (if available) or manually hit endpoints using HTTP clients. Confirm the generated diagrams match current code for accuracy.</p>
+      <div class="important">
+        <p>Always validate HubSpot API interactions in a sandbox account, especially the delete-all flow—it cannot be undone.</p>
+      </div>
+    </section>
+
+    <div class="footer">Documentation generated for report 9.2</div>
+  </div>
+</body>
+</html>

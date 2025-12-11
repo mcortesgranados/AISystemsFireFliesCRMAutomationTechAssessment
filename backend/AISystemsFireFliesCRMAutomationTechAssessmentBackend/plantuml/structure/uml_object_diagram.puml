@@ -1,0 +1,32 @@
+@startuml
+skinparam classAttributeIconSize 0
+
+object "OpenAITestController\n(create controller)" as openAITestController
+object "OpenAIService\n(gpt-4o-mini client)" as openAIService
+object "HubSpotTaskService\n(deal/task API client)" as hubSpotTaskService
+object "HubSpotTaskCreationReport\n(summary DTO)" as creationReport
+object "HubSpotDealDeletionReport\n(summary DTO)" as deletionReport
+
+openAITestController --> openAIService : uses
+openAITestController --> hubSpotTaskService : delegates task creation/deletion
+openAIService --> creationReport : builds
+hubSpotTaskService --> deletionReport : returns
+
+note right of openAITestController
+  Handles incoming requests:
+  * extractActionItems
+  * generateSampleTranscript
+  * createTasksFromTranscriptInHubspot
+end note
+
+note left of openAIService
+  Enriches transcripts via OpenAI
+  Tracks execution timestamp and duration when generating samples
+end note
+
+note right of hubSpotTaskService
+  Posts deals to HubSpot
+  Deletes all deals via pagination and returns a report object
+end note
+
+@enduml

@@ -1,0 +1,44 @@
+@startuml
+skinparam componentStyle rectangle
+
+note top
+  AISystems Profiles
+  Controllers = <<Controller>>
+  Services = <<Service>>
+  DTOs = <<DTO>>
+  Config = <<Config>>
+end note
+
+package "Controllers" {
+  class OpenAITestController <<Controller>>
+  class HubSpotTaskTestController <<Controller>>
+}
+
+package "Services" {
+  class OpenAIService <<Service>>
+  class HubSpotTaskService <<Service>>
+}
+
+package "DTOs" {
+  class HubSpotTaskCreationReport <<DTO>>
+  class HubSpotDealDeletionReport <<DTO>>
+}
+
+package "Config" {
+  class WebConfig <<Config>>
+  class AISystemsDataSourceConfig <<Config>>
+}
+
+OpenAITestController --> OpenAIService
+HubSpotTaskTestController --> HubSpotTaskService
+OpenAIService --> HubSpotTaskCreationReport
+
+note top of OpenAITestController
+  Represents REST endpoints for OpenAI and HubSpot flows.
+end note
+
+note top of OpenAIService
+  Encapsulates OpenAI API business logic.
+end note
+
+@enduml

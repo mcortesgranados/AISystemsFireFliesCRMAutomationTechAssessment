@@ -1,0 +1,82 @@
+<html>
+<head>
+  <title>Report 4.1.2 — CRM Task Creation Detail</title>
+  <style>
+  body { font-family: 'Segoe UI', Arial, sans-serif; background: #fafbfc; color: #23272f; margin: 0; padding: 0; }
+  .container { max-width: 950px; margin: 40px auto; background: #fff; box-shadow: 0 8px 32px rgba(0,0,0,0.08); border-radius: 10px; padding: 32px 40px; }
+  h1 { color: #1565c0; }
+  h2 { color: #2e7d32; margin-top: 32px; }
+  h3 { color: #7b1fa2; margin-top: 24px; }
+  .note { background: #e3f2fd; border-left: 4px solid #1976d2; padding: 16px 20px; margin: 18px 0; border-radius: 7px; }
+  .note ul { list-style: disc inside; margin: 0; padding-left: 1.2em; }
+  .note li { margin-bottom: 3px; line-height: 1.35; }
+  .note p { margin: 0 0 6px 0; line-height: 1.5; }
+  .footer { text-align: right; color: #888; font-size: 1em; margin-top: 40px; }
+  .tag { background: #e3f2fd; color: #1565c0; border-radius: 4px; padding: 3px 8px; margin-left: 6px; font-size: 0.95em; }
+  dt { color: #2e7d32; font-weight: bold; margin-top: 10px; }
+  dd { margin-bottom: 10px; }
+  .params table { border-collapse: collapse; width: 100%; margin: 10px 0; }
+  .params th, .params td { border: 1px solid #ccc; padding: 6px; }
+  .important { background: #fffde7; border-left: 4px solid #fbc02d; padding: 12px 18px; margin: 18px 0; border-radius: 5px; }
+  .sideEffects ul, .solid ul { margin: 0; padding-left: 20px; }
+  @media (max-width: 600px) { .container { padding: 16px 8px; } }
+  pre { background: #f6f8fa; padding: 14px; border-radius: 8px; overflow: auto; font-size: 0.92em; }
+  code { font-family: Consolas, 'Courier New', monospace; }
+  .row { display:flex; gap:20px; flex-wrap:wrap; }
+  .col { flex:1 1 420px; }
+  .endpoint { border: 1px solid #e0e0e0; padding: 12px 14px; border-radius: 8px; background: #fff; box-shadow: 0 3px 8px rgba(0,0,0,0.04); }
+  .json { white-space: pre; font-family: Consolas, 'Courier New', monospace; font-size: 0.95em; }
+  .success { color: #2e7d32; font-weight: 600; }
+  .error { color: #c62828; font-weight: 600; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Report 4.1.2 — Automated CRM Task Creation <span class="tag">Detailed Guide</span></h1>
+    <p>This document details how the project creates HubSpot tasks (deals) automatically from extracted action items.</p>
+
+    <section>
+      <h2>HubSpot Task Creation Flow</h2>
+      <ul>
+        <li><strong>Action items</strong> extracted by the OpenAI pipeline arrive as a list of maps with keys describing description, priority, deadline, assignee.</li>
+        <li><strong>HubSpotTaskService.createTask()</strong> builds HubSpot properties such as <code>ai_systems_description</code>, <code>ai_systems_deadline</code>, <code>ai_systems_assignee</code>, <code>ai_systems_priority</code>.</li>
+        <li><strong>Requests</strong> to HubSpot use <code>RestTemplate.postForEntity</code> against <code>https://api.hubapi.com/crm/v3/objects/deals</code> with bearer auth via <code>HUBSPOT_API_KEY</code>.</li>
+        <li><strong>Bulk creation</strong> is handled by iterating over all action items and collecting responses; each response is stored in the task report along with any errors.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>DTOs & Reports</h2>
+      <p>The resulting <code>HubSpotTaskCreationReport</code> captures:</p>
+      <ul>
+        <li><code>totalRequested</code>, <code>totalSucceeded</code>, <code>totalFailed</code></li>
+        <li><code>responses</code> (HubSpot raw payloads) and <code>errors</code> for troubleshooting.</li>
+        <li>Action item context and enriched task results (IDs, URLs) merged from parsed responses.</li>
+      </ul>
+      <div class="note">
+        <h3>Why it matters</h3>
+        <p>Operators can see which action item generated which HubSpot deal and note failures per item for follow-up.</p>
+      </div>
+    </section>
+
+    <section>
+      <h2>Safety & Idempotency Considerations</h2>
+      <ul>
+        <li>Service does not deduplicate; ensure upstream action items do not already exist or run in a sandbox.</li>
+        <li>The deletion endpoint is destructive, so the automated flow is used cautiously via test endpoints or manual triggers.</li>
+        <li>All HubSpot interactions log output for auditing and debugging.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>Observing the Flow</h2>
+      <p>Composite state and sequence diagrams (in <code>plantuml/behavior</code>) cover how controller enqueues tasks and waits for HubSpot responses. The deployment diagram shows the HubSpot API as an external cloud.</p>
+      <div class="important">
+        <p>Use the generated HTML docs (next to each PlantUML file) to understand each diagram’s focus before editing or adding new flows.</p>
+      </div>
+    </section>
+
+    <div class="footer">Generated detailed documentation for 4.1.2 CRM automation flow</div>
+  </div>
+</body>
+</html>

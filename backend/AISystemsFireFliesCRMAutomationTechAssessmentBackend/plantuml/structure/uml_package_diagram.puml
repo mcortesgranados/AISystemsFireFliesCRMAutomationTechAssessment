@@ -1,0 +1,61 @@
+@startuml
+skinparam packageStyle rectangle
+
+package "Controllers" {
+  [OpenAITestController]
+  [HubSpotTaskTestController]
+  [TestController]
+}
+
+package "Services" {
+  [OpenAIService]
+  [HubSpotTaskService]
+  [ActionItemExtractorService]
+}
+
+package "DTOs" {
+  [HubSpotTaskCreationReport]
+  [HubSpotDealDeletionReport]
+  [HubSpotDealDeletionStatus]
+}
+
+package "Tools" {
+  [HubSpotCreateTaskPropertyMain]
+  [HubSpotDeleteDealsMain]
+  [HubSpotOwnersMain]
+}
+
+package "Configuration" {
+  [WebConfig]
+  [SwaggerUiConfig]
+  [AISystemsDataSourceConfig]
+}
+
+package "Infrastructure" {
+  [SwaggerUiController]
+  [HubSpotTaskServiceRunner]
+}
+
+[OpenAITestController] --> [OpenAIService]
+[OpenAITestController] --> [HubSpotTaskService]
+[HubSpotTaskTestController] --> [HubSpotTaskService]
+[HubSpotTaskService] --> [HubSpotDealDeletionReport]
+[HubSpotTaskService] --> [HubSpotDealDeletionStatus]
+[HubSpotTaskService] --> [HubSpotTaskCreationReport]
+[ActionItemExtractorService] --> [OpenAIService]
+[ActionItemExtractorService] --> [HubSpotTaskService]
+[AISystemsDataSourceConfig] --> [HubSpotTaskService]
+[SwaggerUiController] --> [SwaggerUiConfig]
+[OpenAITestController] --> [SwaggerUiConfig]
+[HubSpotTaskTestController] --> [SwaggerUiConfig]
+[OpenAIService] --> [HubSpotTaskCreationReport]
+
+note top of [OpenAITestController]
+  Aggregates OpenAI + HubSpot flows
+end note
+
+note top of [HubSpotTaskService]
+  Centralizes deals/tasks API calls
+end note
+
+@enduml
