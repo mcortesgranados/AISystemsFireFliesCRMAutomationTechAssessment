@@ -1,0 +1,38 @@
+@startuml
+[*] --> WaitingForRequest
+
+state WaitingForRequest {
+  [*] --> Idle
+}
+
+state Processing {
+  state GeneratingTranscript
+  state ExtractingItems
+  state CreatingTasks
+  state DeletingDeals
+  state Reporting
+
+  GeneratingTranscript --> ExtractingItems
+  ExtractingItems --> CreatingTasks
+  CreatingTasks --> DeletingDeals
+  DeletingDeals --> Reporting
+}
+
+WaitingForRequest --> Processing : request received
+Reporting --> WaitingForRequest : results delivered
+
+state FailureHandling {
+  [*] --> Logging
+  Logging --> WaitingForRequest : fallback response
+}
+
+GeneratingTranscript --> FailureHandling : OpenAI failure
+ExtractingItems --> FailureHandling : parse error
+CreatingTasks --> FailureHandling : HubSpot error
+DeletingDeals --> FailureHandling : deletion failure
+
+note right of Processing
+  Represents the behavioral sequence of phases.
+end note
+
+@enduml
