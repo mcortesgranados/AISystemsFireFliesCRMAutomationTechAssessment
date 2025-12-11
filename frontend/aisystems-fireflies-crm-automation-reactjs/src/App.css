@@ -111,6 +111,30 @@ h1 {
   box-shadow: 0 12px 28px rgba(88, 106, 220, 0.3);
 }
 
+.form-actions .secondary-button {
+  background: #fff;
+  color: #111827;
+  border: 1px solid rgba(15, 23, 42, 0.1);
+  padding: 0.75rem 1.5rem;
+  border-radius: 999px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 120ms ease, box-shadow 120ms ease;
+}
+
+.form-actions .secondary-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.form-actions .secondary-button:not(:disabled):hover {
+  transform: translateY(-1px);
+  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.1);
+}
+
 .status-chip {
   font-size: 0.85rem;
   color: #4a5568;
@@ -219,5 +243,28 @@ h1 {
 
 .empty-state {
   margin: 0.5rem 0 0;
+  color: #475569;
+}
+
+.delete-statuses {
+  margin-top: 1rem;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 0.75rem;
+}
+
+.delete-status-card {
+  border-radius: 10px;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  padding: 1rem;
+  background: #fdfdff;
+}
+
+.delete-status-card p {
+  margin: 0.35rem 0;
+}
+
+.delete-status-card .item-meta {
+  font-size: 0.85rem;
   color: #475569;
 }
