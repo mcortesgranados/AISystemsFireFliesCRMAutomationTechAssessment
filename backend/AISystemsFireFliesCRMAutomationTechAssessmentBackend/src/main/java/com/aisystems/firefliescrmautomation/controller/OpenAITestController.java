@@ -1,6 +1,7 @@
 package com.aisystems.firefliescrmautomation.controller;
 
 import com.aisystems.firefliescrmautomation.service.OpenAIService;
+import com.aisystems.firefliescrmautomation.service.HubSpotTaskService;
 import com.aisystems.firefliescrmautomation.dto.HubSpotTaskCreationReport;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -27,6 +28,9 @@ public class OpenAITestController {
 
     @Autowired
     private OpenAIService openAIService;
+
+    @Autowired
+    private HubSpotTaskService hubSpotTaskService;
 
     /**
      * Test OpenAI completion
@@ -163,4 +167,5 @@ public class OpenAITestController {
     public HubSpotTaskCreationReport createTasksFromTranscriptInHubspot(@RequestBody String baseTranscript) {
         return openAIService.createTasksFromTranscript(baseTranscript);
     }
+
 }
