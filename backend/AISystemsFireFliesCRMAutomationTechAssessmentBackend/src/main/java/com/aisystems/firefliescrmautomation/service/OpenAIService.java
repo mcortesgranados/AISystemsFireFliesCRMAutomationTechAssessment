@@ -5,6 +5,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.List;
@@ -274,6 +276,7 @@ public class OpenAIService {
             "Jennifer Martinez: Sounds great. Thanks, Lisa!\n" +
             "Lisa: Anytime. Talk soon!";
         String prompt = "Generate a random sample meeting transcript with similar structure, participants, and action items as the following transcript. Change names, dates, and details, but keep the format and number of action items. Transcript: " + baseTranscript;
+        Instant start = Instant.now();
         RestTemplate restTemplate = new RestTemplate();
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
@@ -287,11 +290,20 @@ public class OpenAIService {
         body.put("max_tokens", 500);
         HttpEntity<Map<String, Object>> request = new HttpEntity<>(body, headers);
         ResponseEntity<Map> response = restTemplate.postForEntity(OPENAI_URL, request, Map.class);
+        Instant end = Instant.now();
         if (response.getStatusCode() == HttpStatus.OK && response.getBody() != null) {
-            return response.getBody();
+            Map<String, Object> bodyMap = response.getBody();
+            attachExecutionMetadata(bodyMap, start, end);
+            return bodyMap;
         }
         Map<String, Object> error = new HashMap<>();
         error.put("error", "No response from OpenAI or request failed.");
+        attachExecutionMetadata(error, start, end);
         return error;
+    }
+
+    private void attachExecutionMetadata(Map<String, Object> container, Instant start, Instant end) {
+        container.put("executionTimestamp", end.toString());
+        container.put("executionDurationMs", Duration.between(start, end).toMillis());
     }
 }
