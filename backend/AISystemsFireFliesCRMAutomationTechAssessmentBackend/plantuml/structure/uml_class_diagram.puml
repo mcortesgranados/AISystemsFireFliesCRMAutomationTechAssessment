@@ -1,0 +1,130 @@
+@startuml
+skinparam classAttributeIconSize 0
+
+interface WebMvcConfigurer
+interface DataSource
+interface JdbcTemplate
+
+package "controllers" {
+  class OpenAITestController {
+    - OpenAIService openAIService
+    - HubSpotTaskService hubSpotTaskService
+    + testOpenAI(...): String
+    + extractActionItems(...): List<Map<String,Object>>
+    + generateSampleTranscript(): String
+    + generateSampleTranscriptFull(): Map<String,Object>
+    + createTasksFromTranscriptInHubspot(...): HubSpotTaskCreationReport
+  }
+
+  class HubSpotTaskTestController {
+    - HubSpotTaskService hubSpotTaskService
+    + createTask(...): String
+    + deleteAllHubSpotDeals(): HubSpotDealDeletionReport
+  }
+
+  class TestController {
+    + concatStrings(str1: String, str2: String): String
+  }
+}
+
+package "services" {
+  class OpenAIService {
+    - String openaiApiKey
+    + getCompletion(prompt: String): String
+    + extractActionItemsFromTranscript(transcript: String): List<Map<String,Object>>
+    + createTasksFromTranscript(baseTranscript: String): HubSpotTaskCreationReport
+    + generateRandomSampleTranscript(): String
+    + generateRandomSampleTranscriptFull(): Map<String,Object>
+  }
+
+  class HubSpotTaskService {
+    - String hubspotApiKey
+    + createTask(...): String
+    + createTasksFromActionItems(items: List<Map<String,Object>>): List<String>
+    + deleteAllHubSpotDeals(): HubSpotDealDeletionReport
+  }
+
+  class ActionItemExtractorService {
+    - OpenAIService openAIService
+    - HubSpotTaskService hubSpotTaskService
+    + extractActionItems(transcript: String): List<Map<String,Object>>
+    + extractAndCreateHubSpotTasks(transcript: String): HubSpotTaskCreationReport
+  }
+}
+
+package "dto" {
+  class HubSpotTaskCreationReport {
+    +int totalRequested
+    +int totalSucceeded
+    +int totalFailed
+  }
+
+  class HubSpotDealDeletionReport {
+    +int totalFound
+    +int totalDeleted
+    +int totalFailed
+  }
+
+  class HubSpotDealDeletionStatus {
+    +String dealId
+    +boolean deleted
+    +String message
+  }
+}
+
+class Application {
+  +main(args: String[]): void
+}
+
+class HubSpotTaskServiceRunner {
+  - HubSpotTaskService hubSpotTaskService
+  + run(args: String[]): void
+}
+
+package "config" {
+  class WebConfig {
+    +corsConfigurer(): WebMvcConfigurer
+  }
+  class SwaggerUiConfig {
+    +addResourceHandlers(...): void
+    +addViewControllers(...): void
+  }
+}
+
+class AISystemsDataSourceConfig {
+  - String url
+  - String username
+  - String password
+  - String driverClassName
+  + dataSource(): DataSource
+  + AISystemsJdbcTemplate(DataSource): JdbcTemplate
+}
+
+package "tools" {
+  class HubSpotCreateTaskPropertyMain {
+    +main(String[]): void
+  }
+  class HubSpotOwnersMain {
+    +main(String[]): void
+  }
+  class HubSpotDeleteDealsMain {
+    +main(String[]): void
+  }
+}
+
+OpenAITestController --> OpenAIService
+OpenAITestController --> HubSpotTaskService
+HubSpotTaskTestController --> HubSpotTaskService
+ActionItemExtractorService --> OpenAIService
+ActionItemExtractorService --> HubSpotTaskService
+OpenAIService .down.> HubSpotTaskCreationReport
+HubSpotTaskService .down.> HubSpotDealDeletionReport
+HubSpotTaskService .down.> HubSpotDealDeletionStatus
+HubSpotTaskServiceRunner --> HubSpotTaskService
+Application --> HubSpotTaskServiceRunner
+Application --> OpenAITestController
+Application --> HubSpotTaskTestController
+Application --> TestController
+Application --> SwaggerUiController
+
+@enduml
